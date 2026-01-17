@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agricultural Officer Dashboard - DPI Platform</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div style="padding: 0 1.5rem; margin-bottom: 2rem;">
+                <h3 style="color: var(--primary-color);">🌾 Agriculture</h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">Officer Portal</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active">📊 Dashboard</a></li>
+                <li class="sidebar-item"><a href="#queries" class="sidebar-link">❓ Farmer Queries</a></li>
+                <li class="sidebar-item"><a href="#advisories" class="sidebar-link">📝 Advisories</a></li>
+                <li class="sidebar-item"><a href="#updates" class="sidebar-link">📢 Post Updates</a></li>
+                <li class="sidebar-item"><a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <h1>Agricultural Officer Dashboard</h1>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Provide expert advice to farmers</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">38</div>
+                    <div class="stat-label">Pending Queries</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-value">245</div>
+                    <div class="stat-label">Advisories Given</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Updates Posted</div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <h3>Post Agricultural Update</h3>
+                <form>
+                    <div class="form-group">
+                        <label class="form-label">Update Type</label>
+                        <select class="form-select">
+                            <option>Weather Alert</option>
+                            <option>Market Price</option>
+                            <option>Government Scheme</option>
+                            <option>Pest Alert</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Content</label>
+                        <textarea class="form-textarea"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Post Update</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Recent Farmer Queries</h3>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Farmer</th>
+                                <th>Query</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>AGR-001</td>
+                                <td>Farmer Name</td>
+                                <td>Pest control for wheat crop</td>
+                                <td><span class="badge badge-warning">Submitted</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary">View</button>
+                                    <button class="btn btn-sm btn-secondary">Respond</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

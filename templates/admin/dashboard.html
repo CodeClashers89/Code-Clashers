@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - DPI Platform</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div style="padding: 0 1.5rem; margin-bottom: 2rem;">
+                <h3 style="color: var(--primary-color);">🏛️ Admin Panel</h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">Government Admin</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active">📊 Dashboard</a></li>
+                <li class="sidebar-item"><a href="#approvals" class="sidebar-link">✅ Approvals</a></li>
+                <li class="sidebar-item"><a href="#services" class="sidebar-link">🔧 Services</a></li>
+                <li class="sidebar-item"><a href="#users" class="sidebar-link">👥 Users</a></li>
+                <li class="sidebar-item"><a href="#analytics" class="sidebar-link">📈 Analytics</a></li>
+                <li class="sidebar-item"><a href="/admin/" class="sidebar-link">⚙️ Django Admin</a></li>
+                <li class="sidebar-item"><a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <h1>Government Admin Dashboard</h1>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">System-wide administration and monitoring</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="admin-total-users">1,234</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Active Services</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-value" id="admin-pending-approvals">15</div>
+                    <div class="stat-label">Pending Approvals</div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-value">5,678</div>
+                    <div class="stat-label">Total Requests</div>
+                </div>
+            </div>
+
+            <div class="grid grid-2 mb-3">
+                <div class="card">
+                    <h3>Service Health</h3>
+                    <div style="margin-top: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                            <span>🏥 Healthcare</span>
+                            <span class="badge badge-success">Online</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                            <span>🌾 Agriculture</span>
+                            <span class="badge badge-success">Online</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>🏙️ City Services</span>
+                            <span class="badge badge-success">Online</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Quick Actions</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+                        <button class="btn btn-primary">Create New Service</button>
+                        <button class="btn btn-secondary">View All Approvals</button>
+                        <button class="btn btn-outline">Generate Report</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Pending Service Provider Approvals</h3>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Requested</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="approvals-table">
+                            <tr>
+                                <td>Dr. John Smith</td>
+                                <td>Doctor</td>
+                                <td>2 days ago</td>
+                                <td><span class="badge badge-warning">Pending</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary">Approve</button>
+                                    <button class="btn btn-sm btn-danger">Reject</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

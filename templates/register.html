@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - DPI Platform</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body style="background: linear-gradient(135deg, #10b981, #059669); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 0;">
+    <div class="card" style="max-width: 600px; width: 90%; padding: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="color: var(--primary-color); margin-bottom: 0.5rem;">🏛️ DPI Platform</h1>
+            <p style="color: var(--text-secondary);">Digital Public Infrastructure</p>
+        </div>
+
+        <h2 style="text-align: center; margin-bottom: 2rem;">Register</h2>
+
+        <div id="success-message" class="hidden" style="background: #d1fae5; color: #065f46; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;"></div>
+        <div id="error-message" class="hidden" style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;"></div>
+
+        <form id="register-form">
+            <div class="grid grid-2" style="gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" id="first_name" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" id="last_name" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" id="username" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="email" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" id="phone_number" class="form-input" placeholder="1234567890">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Role</label>
+                <select id="role" class="form-select" required>
+                    <option value="citizen">Citizen</option>
+                    <option value="doctor">Doctor (Requires Approval)</option>
+                    <option value="city_staff">City Staff (Requires Approval)</option>
+                    <option value="agri_officer">Agricultural Officer (Requires Approval)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Address</label>
+                <textarea id="address" class="form-textarea" rows="2"></textarea>
+            </div>
+
+            <div class="grid grid-2" style="gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="password" class="form-input" required minlength="8">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" id="password_confirm" class="form-input" required minlength="8">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                Register
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <p style="color: var(--text-secondary);">
+                Already have an account? 
+                <a href="/login/" style="color: var(--primary-color); font-weight: 500;">Login here</a>
+            </p>
+            <p style="margin-top: 0.5rem;">
+                <a href="/" style="color: var(--text-secondary);">← Back to Home</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                first_name: document.getElementById('first_name').value,
+                last_name: document.getElementById('last_name').value,
+                phone_number: document.getElementById('phone_number').value,
+                role: document.getElementById('role').value,
+                address: document.getElementById('address').value,
+                password: document.getElementById('password').value,
+                password_confirm: document.getElementById('password_confirm').value
+            };
+
+            const errorDiv = document.getElementById('error-message');
+            const successDiv = document.getElementById('success-message');
+            
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
+
+            if (formData.password !== formData.password_confirm) {
+                errorDiv.textContent = 'Passwords do not match!';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/accounts/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.requires_approval) {
+                        successDiv.textContent = 'Registration successful! Your account is pending approval. You will be notified once approved.';
+                        successDiv.classList.remove('hidden');
+                        document.getElementById('register-form').reset();
+                        setTimeout(() => {
+                            window.location.href = '/login/';
+                        }, 3000);
+                    } else {
+                        successDiv.textContent = 'Registration successful! Redirecting to login...';
+                        successDiv.classList.remove('hidden');
+                        setTimeout(() => {
+                            window.location.href = '/login/';
+                        }, 2000);
+                    }
+                } else {
+                    const errors = Object.values(data).flat().join(', ');
+                    errorDiv.textContent = errors || 'Registration failed. Please try again.';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

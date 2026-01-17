@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Public Infrastructure - National Service Platform</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <a href="/" class="navbar-brand">
+                🏛️ DPI Platform
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="#services" class="navbar-link">Services</a></li>
+                <li><a href="#about" class="navbar-link">About</a></li>
+                <li><a href="/login/" class="btn btn-outline btn-sm" style="border-color: var(--primary-color); color: var(--primary-color);">Login</a></li>
+                <li><a href="/register/" class="btn btn-primary btn-sm">Register</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section style="background: linear-gradient(135deg, #2563eb, #1e40af); color: white; padding: 6rem 0; text-align: center;">
+            <div class="container">
+                <h1 style="font-size: 3rem; margin-bottom: 1.5rem;">National Digital Public Infrastructure</h1>
+                <p style="font-size: 1.25rem; margin-bottom: 2rem; opacity: 0.9;">
+                    Seamless access to healthcare, agriculture, and city services - all in one platform
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <a href="/login/" class="btn btn-lg" style="background: white; color: #2563eb;">Login to Portal</a>
+                    <a href="/register/" class="btn btn-lg btn-outline" style="border-color: white; color: white;">Register Now</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" style="padding: 4rem 0;">
+            <div class="container">
+                <h2 class="text-center mb-3">Available Services</h2>
+                <div class="grid grid-3">
+                    <div class="card">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🏥</div>
+                        <h3>Healthcare Services</h3>
+                        <p>Book appointments, access medical records, consult with doctors, and manage your health digitally.</p>
+                        <a href="/citizen/" class="btn btn-primary">Access Healthcare</a>
+                    </div>
+                    <div class="card">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🌾</div>
+                        <h3>Agriculture Advisory</h3>
+                        <p>Get expert advice, market updates, weather alerts, and government scheme information for farmers.</p>
+                        <a href="/citizen/" class="btn btn-primary">Get Advisory</a>
+                    </div>
+                    <div class="card">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🏙️</div>
+                        <h3>City Services</h3>
+                        <p>Report complaints, track issues, access utilities, and engage with local government services.</p>
+                        <a href="/citizen/" class="btn btn-primary">City Services</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section style="background: var(--bg-tertiary); padding: 4rem 0;">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-users">10,000+</div>
+                        <div class="stat-label">Registered Users</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-value" id="total-services">3</div>
+                        <div class="stat-label">Active Services</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-value" id="total-requests">5,000+</div>
+                        <div class="stat-label">Requests Processed</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <div class="stat-value">99.9%</div>
+                        <div class="stat-label">System Uptime</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section style="padding: 4rem 0;">
+            <div class="container">
+                <h2 class="text-center mb-3">Platform Features</h2>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h4>🔒 Secure & Private</h4>
+                        <p>End-to-end encryption and role-based access control ensure your data is always protected.</p>
+                    </div>
+                    <div class="card">
+                        <h4>⚡ Fast & Scalable</h4>
+                        <p>Built to handle millions of concurrent users with load balancing and caching.</p>
+                    </div>
+                    <div class="card">
+                        <h4>🔄 Interoperable</h4>
+                        <p>Seamless data exchange between services for a unified experience.</p>
+                    </div>
+                    <div class="card">
+                        <h4>📱 Multi-Platform</h4>
+                        <p>Access services via web, mobile app, or API integration.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer style="background: var(--text-primary); color: white; padding: 2rem 0; text-align: center;">
+        <div class="container">
+            <p>&copy; 2026 Digital Public Infrastructure Platform. Built for AU Hackathon.</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

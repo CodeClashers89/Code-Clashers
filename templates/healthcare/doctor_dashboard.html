@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - DPI Platform</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div style="padding: 0 1.5rem; margin-bottom: 2rem;">
+                <h3 style="color: var(--primary-color);">🏥 Healthcare</h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">Doctor Portal</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active">📊 Dashboard</a></li>
+                <li class="sidebar-item"><a href="#appointments" class="sidebar-link">📅 Appointments</a></li>
+                <li class="sidebar-item"><a href="#patients" class="sidebar-link">👥 Patients</a></li>
+                <li class="sidebar-item"><a href="#records" class="sidebar-link">📋 Medical Records</a></li>
+                <li class="sidebar-item"><a href="#unavailability" class="sidebar-link">⏰ Unavailability</a></li>
+                <li class="sidebar-item"><a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <h1>Doctor Dashboard</h1>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Manage appointments and patient records</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Today's Appointments</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-value">156</div>
+                    <div class="stat-label">Total Patients</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Pending Approvals</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Today's Appointments</h3>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Patient</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointments-table">
+                            <tr>
+                                <td>09:00 AM</td>
+                                <td>John Doe</td>
+                                <td>Regular Checkup</td>
+                                <td><span class="badge badge-info">Scheduled</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary">View</button>
+                                    <button class="btn btn-sm btn-secondary">Complete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

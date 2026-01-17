@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Staff Dashboard - DPI Platform</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div style="padding: 0 1.5rem; margin-bottom: 2rem;">
+                <h3 style="color: var(--primary-color);">🏙️ City Services</h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">Staff Portal</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active">📊 Dashboard</a></li>
+                <li class="sidebar-item"><a href="#complaints" class="sidebar-link">📋 Complaints</a></li>
+                <li class="sidebar-item"><a href="#responses" class="sidebar-link">💬 Responses</a></li>
+                <li class="sidebar-item"><a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <h1>City Staff Dashboard</h1>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Manage public complaints and responses</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">42</div>
+                    <div class="stat-label">Pending Complaints</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-value">128</div>
+                    <div class="stat-label">Resolved This Month</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Recent Complaints</h3>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="complaints-table">
+                            <tr>
+                                <td>CMP-001</td>
+                                <td>Street Light Not Working</td>
+                                <td>Main Street</td>
+                                <td><span class="badge badge-warning">Submitted</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary">View</button>
+                                    <button class="btn btn-sm btn-secondary">Respond</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

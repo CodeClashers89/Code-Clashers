@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - DPI Platform</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body style="background: linear-gradient(135deg, #2563eb, #1e40af); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <div class="card" style="max-width: 450px; width: 90%; padding: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="color: var(--primary-color); margin-bottom: 0.5rem;">🏛️ DPI Platform</h1>
+            <p style="color: var(--text-secondary);">Digital Public Infrastructure</p>
+        </div>
+
+        <h2 style="text-align: center; margin-bottom: 2rem;">Login</h2>
+
+        <div id="error-message" class="hidden" style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;"></div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" id="username" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="password" class="form-input" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                Login
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <p style="color: var(--text-secondary);">
+                Don't have an account? 
+                <a href="/register/" style="color: var(--primary-color); font-weight: 500;">Register here</a>
+            </p>
+            <p style="margin-top: 0.5rem;">
+                <a href="/" style="color: var(--text-secondary);">← Back to Home</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error-message');
+            
+            try {
+                const response = await fetch('/api/accounts/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store tokens
+                    localStorage.setItem('authToken', data.access);
+                    localStorage.setItem('refreshToken', data.refresh);
+                    localStorage.setItem('userRole', data.user.role);
+                    localStorage.setItem('userName', data.user.username);
+
+                    // Redirect based on role
+                    const role = data.user.role;
+                    if (role === 'citizen') {
+                        window.location.href = '/citizen/';
+                    } else if (role === 'doctor') {
+                        window.location.href = '/doctor/';
+                    } else if (role === 'city_staff') {
+                        window.location.href = '/city-staff/';
+                    } else if (role === 'agri_officer') {
+                        window.location.href = '/agri-officer/';
+                    } else if (role === 'admin') {
+                        window.location.href = '/admin-dashboard/';
+                    } else {
+                        window.location.href = '/';
+                    }
+                } else {
+                    errorDiv.textContent = data.non_field_errors ? data.non_field_errors[0] : 'Login failed. Please check your credentials.';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

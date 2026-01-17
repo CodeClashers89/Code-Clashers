@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Portal - DPI Platform</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div style="padding: 0 1.5rem; margin-bottom: 2rem;">
+                <h3 style="color: var(--primary-color);">🏛️ DPI Platform</h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">Citizen Portal</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item">
+                    <a href="#dashboard" class="sidebar-link active">
+                        📊 Dashboard
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#healthcare" class="sidebar-link">
+                        🏥 Healthcare
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#agriculture" class="sidebar-link">
+                        🌾 Agriculture
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#city-services" class="sidebar-link">
+                        🏙️ City Services
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#my-requests" class="sidebar-link">
+                        📋 My Requests
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" onclick="logout(); return false;" class="sidebar-link">
+                        🚪 Logout
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div style="margin-bottom: 2rem;">
+                <h1>Welcome, Citizen!</h1>
+                <p style="color: var(--text-secondary);">Access all government services from one place</p>
+            </div>
+
+            <!-- Services Grid -->
+            <div class="grid grid-3 mb-3">
+                <div class="card">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🏥</div>
+                    <h3>Healthcare Services</h3>
+                    <p>Book appointments, view medical records</p>
+                    <button class="btn btn-primary" onclick="showHealthcareSection()">Access</button>
+                </div>
+                <div class="card">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🌾</div>
+                    <h3>Agriculture Advisory</h3>
+                    <p>Submit queries, get expert advice</p>
+                    <button class="btn btn-primary" onclick="showAgricultureSection()">Access</button>
+                </div>
+                <div class="card">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🏙️</div>
+                    <h3>City Services</h3>
+                    <p>Report complaints, track status</p>
+                    <button class="btn btn-primary" onclick="showCityServicesSection()">Access</button>
+                </div>
+            </div>
+
+            <!-- Healthcare Section -->
+            <div id="healthcare-section" class="hidden">
+                <h2>Healthcare Services</h2>
+                <div class="card mb-3">
+                    <h3>Book Appointment</h3>
+                    <form id="appointment-form">
+                        <div class="form-group">
+                            <label class="form-label">Select Doctor</label>
+                            <select class="form-select" id="doctor-select" required>
+                                <option value="">Loading doctors...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Appointment Date</label>
+                            <input type="date" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Appointment Time</label>
+                            <input type="time" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Reason for Visit</label>
+                            <textarea class="form-textarea" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Book Appointment</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>My Appointments</h3>
+                    <div id="appointments-list">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agriculture Section -->
+            <div id="agriculture-section" class="hidden">
+                <h2>Agriculture Advisory</h2>
+                <div class="card mb-3">
+                    <h3>Submit Query</h3>
+                    <form id="farmer-query-form">
+                        <div class="form-group">
+                            <label class="form-label">Crop Category</label>
+                            <select class="form-select" required>
+                                <option value="">Select crop</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Query Title</label>
+                            <input type="text" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-textarea" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Query</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>Recent Updates</h3>
+                    <div id="agri-updates-list">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- City Services Section -->
+            <div id="city-services-section" class="hidden">
+                <h2>City Services</h2>
+                <div class="card mb-3">
+                    <h3>Report Complaint</h3>
+                    <form id="complaint-form">
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" required>
+                                <option value="">Select category</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-textarea" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-input" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>My Complaints</h3>
+                    <div id="complaints-list">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        function showHealthcareSection() {
+            document.getElementById('healthcare-section').classList.remove('hidden');
+            document.getElementById('agriculture-section').classList.add('hidden');
+            document.getElementById('city-services-section').classList.add('hidden');
+        }
+
+        function showAgricultureSection() {
+            document.getElementById('healthcare-section').classList.add('hidden');
+            document.getElementById('agriculture-section').classList.remove('hidden');
+            document.getElementById('city-services-section').classList.add('hidden');
+        }
+
+        function showCityServicesSection() {
+            document.getElementById('healthcare-section').classList.add('hidden');
+            document.getElementById('agriculture-section').classList.add('hidden');
+            document.getElementById('city-services-section').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
