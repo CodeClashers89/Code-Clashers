@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,30 +30,37 @@
             background: var(--bg-secondary);
             border-radius: 0.5rem;
         }
+
         .user-profile h4 {
             margin: 0 0 0.25rem 0;
             color: var(--text-primary);
         }
+
         .user-profile p {
             margin: 0;
             font-size: 0.875rem;
             color: var(--text-muted);
         }
+
         .section-content {
             display: none;
         }
+
         .section-content.active {
             display: block;
         }
+
         .empty-state {
             text-align: center;
             padding: 3rem 1rem;
             color: var(--text-muted);
         }
+
         .empty-state-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
         }
+
         .request-card {
             background: white;
             border: 1px solid var(--border-color);
@@ -60,15 +68,18 @@
             padding: 1rem;
             margin-bottom: 1rem;
         }
+
         .request-card h4 {
             margin: 0 0 0.5rem 0;
         }
+
         .request-meta {
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
             margin-top: 0.5rem;
         }
+
         .loading-overlay {
             display: none;
             position: fixed;
@@ -76,16 +87,18 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 9999;
             align-items: center;
             justify-content: center;
         }
+
         .loading-overlay.active {
             display: flex;
         }
     </style>
 </head>
+
 <body>
     <div class="loading-overlay" id="loading-overlay">
         <div class="spinner"></div>
@@ -190,7 +203,81 @@
             <!-- Healthcare Section -->
             <div id="healthcare-section" class="section-content">
                 <h2>Healthcare Services</h2>
-                
+
+                <!-- Disease Prediction Form -->
+                <div class="card mb-3">
+                    <h3>Disease Risk Prediction</h3>
+                    <form id="disease-prediction-form" onsubmit="predictDisease(event)">
+                        <div class="row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Age</label>
+                                <input type="number" class="form-input" name="age" required>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Gender</label>
+                                <select class="form-select" name="gender">
+                                    <option value="M">Male</option>
+                                    <option value="F">Female</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">BMI</label>
+                                <input type="number" step="0.1" class="form-input" name="bmi" required>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Smoking</label>
+                                <select class="form-select" name="smoking">
+                                    <option value="low">Low</option>
+                                    <option value="moderate">Moderate</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Alcohol</label>
+                                <select class="form-select" name="alcohol">
+                                    <option value="low">Low</option>
+                                    <option value="moderate">Moderate</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Physical Activity</label>
+                                <select class="form-select" name="activity">
+                                    <option value="low">Low</option>
+                                    <option value="moderate">Moderate</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Family History</label>
+                            <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" name="family_diabetes"> Diabetes
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" name="family_heart"> Heart Disease
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" name="family_cancer"> Cancer
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Predict Health
+                            Risks</button>
+                    </form>
+
+                    <div id="disease-result" style="display: none;"></div>
+                </div>
+
                 <div class="card mb-3">
                     <h3>Book Appointment</h3>
                     <form id="appointment-form" onsubmit="bookAppointment(event)">
@@ -202,11 +289,13 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Appointment Date *</label>
-                            <input type="date" class="form-input" id="appointment-date" name="appointment_date" required>
+                            <input type="date" class="form-input" id="appointment-date" name="appointment_date"
+                                required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Appointment Time *</label>
-                            <input type="time" class="form-input" id="appointment-time" name="appointment_time" required>
+                            <input type="time" class="form-input" id="appointment-time" name="appointment_time"
+                                required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Reason for Visit *</label>
@@ -234,7 +323,73 @@
             <!-- Agriculture Section -->
             <div id="agriculture-section" class="section-content">
                 <h2>Agriculture Advisory</h2>
-                
+
+                <!-- Crop Recommendation Form -->
+                <div class="card mb-3">
+                    <h3>Crop Recommendation</h3>
+                    <form id="crop-recommendation-form" onsubmit="recommendCrop(event)">
+                        <div class="row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">District</label>
+                                <select class="form-select" name="location">
+                                    <option value="Ahmedabad">Ahmedabad</option>
+                                    <option value="Rajkot">Rajkot</option>
+                                    <option value="Surat">Surat</option>
+                                    <option value="Vadodara">Vadodara</option>
+                                    <!-- Add other districts as in forms.py if needed, or keep it simple for now -->
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Season</label>
+                                <select class="form-select" name="season">
+                                    <option value="Kharif">Kharif</option>
+                                    <option value="Rabi">Rabi</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Soil Type</label>
+                                <select class="form-select" name="soil_type">
+                                    <option value="Black">Black</option>
+                                    <option value="Loamy">Loamy</option>
+                                    <option value="Clay">Clay</option>
+                                    <option value="Sandy">Sandy</option>
+                                    <option value="Red">Red</option>
+                                    <option value="Alluvial">Alluvial</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Irrigation</label>
+                                <select class="form-select" name="irrigation">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Rainfall</label>
+                                <select class="form-select" name="rainfall">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Land Size (Acres)</label>
+                                <input type="number" step="0.1" class="form-input" name="land_size" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Get Recommendation</button>
+                    </form>
+
+                    <div id="crop-result" style="display: none;"></div>
+                </div>
+
                 <div class="card mb-3">
                     <h3>Submit Query</h3>
                     <form id="farmer-query-form" onsubmit="submitFarmerQuery(event)">
@@ -243,7 +398,8 @@
                             <select class="form-select" id="crop-category-select" name="crop_category">
                                 <option value="">Other / General Query</option>
                             </select>
-                            <small style="color: var(--text-muted); font-size: 0.875rem;">Select a crop if your query is crop-specific, or leave as "Other" for general queries</small>
+                            <small style="color: var(--text-muted); font-size: 0.875rem;">Select a crop if your query is
+                                crop-specific, or leave as "Other" for general queries</small>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Query Title *</label>
@@ -251,11 +407,13 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Description *</label>
-                            <textarea class="form-textarea" id="query-description" name="description" required></textarea>
+                            <textarea class="form-textarea" id="query-description" name="description"
+                                required></textarea>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Location</label>
-                            <input type="text" class="form-input" id="query-location" name="location" placeholder="Village/Area">
+                            <input type="text" class="form-input" id="query-location" name="location"
+                                placeholder="Village/Area">
                         </div>
                         <button type="submit" class="btn btn-primary">Submit Query</button>
                     </form>
@@ -279,7 +437,7 @@
             <!-- City Services Section -->
             <div id="city-services-section" class="section-content">
                 <h2>City Services</h2>
-                
+
                 <div class="card mb-3">
                     <h3>Report Complaint</h3>
                     <form id="complaint-form" onsubmit="submitComplaint(event)">
@@ -295,7 +453,8 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Description *</label>
-                            <textarea class="form-textarea" id="complaint-description" name="description" required></textarea>
+                            <textarea class="form-textarea" id="complaint-description" name="description"
+                                required></textarea>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Location *</label>
@@ -341,7 +500,7 @@
             </div>
         </main>
     </div>
-    
+
     <!-- Response Details Modal -->
     <div class="modal" id="response-modal">
         <div class="modal-content">
@@ -360,5 +519,176 @@
 
     <script src="{% static 'js/main.js' %}"></script>
     <script src="{% static 'js/citizen.js' %}"></script>
+    <script>
+        // Disease Prediction
+        async function predictDisease(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // Map checkboxes to booleans/ints
+            data.family_diabetes = form.family_diabetes.checked ? 1 : 0;
+            data.family_heart = form.family_heart.checked ? 1 : 0;
+            data.family_cancer = form.family_cancer.checked ? 1 : 0;
+
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.textContent = 'Predicting...';
+            btn.disabled = true;
+
+            const resultContainer = document.getElementById('disease-result');
+            resultContainer.innerHTML = '';
+            resultContainer.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/healthcare/predict-disease/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error('Prediction failed');
+
+                const result = await response.json();
+
+                let checkupsHtml = '';
+                if (result.checkups.length > 0) {
+                    checkupsHtml = `
+                        <div style="margin-top: 1rem;">
+                            <strong>Recommended Checkups:</strong>
+                            <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                                ${result.checkups.map(c => `<li>${c}</li>`).join('')}
+                            </ul>
+                        </div>`;
+                }
+
+                let adviceHtml = '';
+                if (result.advice.length > 0) {
+                    adviceHtml = `
+                        <div style="margin-top: 1rem;">
+                            <strong>Lifestyle Advice:</strong>
+                            <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                                ${result.advice.map(a => `<li>${a}</li>`).join('')}
+                            </ul>
+                        </div>`;
+                }
+
+                resultContainer.innerHTML = `
+                    <div style="background: #f0f9ff; padding: 1.5rem; border-radius: 0.5rem; margin-top: 1.5rem; border: 1px solid #bae6fd;">
+                        <h4 style="color: #0369a1; margin-top: 0;">Prediction Results</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; text-align: center;">
+                            <div style="background: white; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <div style="font-size: 0.875rem; color: #64748b;">Diabetes Risk</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: ${result.diabetes > 50 ? '#ef4444' : '#22c55e'}">${result.diabetes}%</div>
+                            </div>
+                            <div style="background: white; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <div style="font-size: 0.875rem; color: #64748b;">Heart Disease Risk</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: ${result.heart > 50 ? '#ef4444' : '#22c55e'}">${result.heart}%</div>
+                            </div>
+                            <div style="background: white; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <div style="font-size: 0.875rem; color: #64748b;">Cancer Risk</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: ${result.cancer > 50 ? '#ef4444' : '#22c55e'}">${result.cancer}%</div>
+                            </div>
+                        </div>
+                        ${checkupsHtml}
+                        ${adviceHtml}
+                    </div>
+                `;
+                resultContainer.style.display = 'block';
+
+            } catch (error) {
+                console.error(error);
+                alert('An error occurred during prediction.');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Crop Recommendation
+        async function recommendCrop(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.textContent = 'Analyzing...';
+            btn.disabled = true;
+
+            const resultContainer = document.getElementById('crop-result');
+            resultContainer.innerHTML = '';
+            resultContainer.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/agriculture/recommend-crop/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error('Recommendation failed');
+
+                const result = await response.json();
+
+                resultContainer.innerHTML = `
+                    <div style="border: 1px solid #e2e8f0; padding: 1.5rem; border-radius: 0.5rem; margin-top: 1.5rem; background: white;">
+                        <h3 style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.25rem; color: #0f172a;">Recommendation Results</h3>
+                        
+                        <div style="background: #2563eb; color: white; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1), 0 2px 4px -1px rgba(37, 99, 235, 0.06);">
+                            <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">${result.crop}</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">Recommended Crop</div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 1.5rem; border-radius: 0.5rem; border: 1px solid #f1f5f9;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                <span style="font-size: 1.25rem;">📝</span>
+                                <h4 style="margin: 0; font-size: 1.1rem; color: #334155;">Advisory</h4>
+                            </div>
+                            <div style="color: #475569; line-height: 1.5;">${result.advisory}</div>
+                        </div>
+                        
+                        ${result.risk !== 'No major risk detected' ? `
+                        <div style="margin-top: 1rem; padding: 1rem; background: #fef2f2; border-radius: 0.5rem; border: 1px solid #fecaca; color: #991b1b; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>⚠️</span>
+                            <div><strong>Risk Alert:</strong> ${result.risk}</div>
+                        </div>` : ''}
+                    </div>
+                `;
+                resultContainer.style.display = 'block';
+
+            } catch (error) {
+                console.error(error);
+                alert('An error occurred during recommendation.');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
 </body>
+
 </html>

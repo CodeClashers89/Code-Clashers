@@ -10,5 +10,6 @@ router.register('updates', views.AgriUpdateViewSet, basename='agri-update')
 
 urlpatterns = [
     path('stats/', views.dashboard_stats, name='dashboard-stats'),
+    path('recommend-crop/', views.recommend_crop, name='recommend-crop'),
     path('', include(router.urls)),
 ]

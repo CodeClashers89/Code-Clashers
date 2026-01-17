@@ -10,5 +10,6 @@ router.register('prescriptions', views.PrescriptionViewSet, basename='prescripti
 router.register('unavailability', views.DoctorUnavailabilityViewSet, basename='unavailability')
 
 urlpatterns = [
+    path('predict-disease/', views.predict_disease, name='predict-disease'),
     path('', include(router.urls)),
 ]

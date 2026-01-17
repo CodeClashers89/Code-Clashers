@@ -9,6 +9,9 @@ from .serializers import (
     DoctorSerializer, AppointmentSerializer, MedicalRecordSerializer,
     PrescriptionSerializer, FollowUpSerializer, DoctorUnavailabilitySerializer
 )
+from dpi_platform.forms import PatientForm
+from dpi_platform.utils import diabetes_model, heart_model, cancer_model, scaler
+import numpy as np
 
 @login_required
 def doctor_dashboard(request):
@@ -192,3 +195,74 @@ class DoctorUnavailabilityViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         doctor = Doctor.objects.get(user=self.request.user)
         serializer.save(doctor=doctor)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny]) # Making it accessible as per flow, security can be tightened later
+def predict_disease(request):
+    """Predict disease risks based on patient data"""
+    form = PatientForm(request.data)
+    if form.is_valid():
+        data = form.cleaned_data
+        
+        # Encode input
+        # Validation for smoking, alcohol, activity mapping is handled by form choice field but we need to map to int
+        smoking_map = {"low": 0, "moderate": 1, "high": 2}
+        alcohol_map = {"low": 0, "moderate": 1, "high": 2}
+        activity_map = {"low": 0, "moderate": 1, "high": 2}
+
+        try:
+            input_vector = np.array([[
+                data["age"],
+                1 if data["gender"] == "M" else 0,
+                data["bmi"],
+                smoking_map[data["smoking"]],
+                alcohol_map[data["alcohol"]],
+                activity_map[data["activity"]],
+                int(data["family_diabetes"]),
+                int(data["family_heart"]),
+                int(data["family_cancer"])
+            ]])
+
+            # Scale input
+            X_scaled = scaler.transform(input_vector)
+
+            # Predict risks
+            diabetes_risk = diabetes_model.predict_proba(X_scaled)[0][1]
+            heart_risk = heart_model.predict_proba(X_scaled)[0][1]
+            cancer_risk = cancer_model.predict_proba(X_scaled)[0][1]
+
+            # Recommendations
+            checkups = []
+            if diabetes_risk > 0.6:
+                checkups.append("Blood Sugar Test (Fasting / HbA1c)")
+            if heart_risk > 0.5:
+                checkups.extend(["Blood Pressure Test", "ECG"])
+            if cancer_risk > 0.4:
+                checkups.append("Cancer Screening Consultation")
+            if data["bmi"] > 25:
+                checkups.append("Lipid Profile")
+
+            # Lifestyle Advice
+            advice = []
+            if data["smoking"] == "high":
+                advice.append("Reduce smoking gradually")
+            if data["alcohol"] == "high":
+                advice.append("Limit alcohol consumption")
+            if data["activity"] == "low":
+                advice.append("Increase physical activity to at least 30 minutes daily")
+            if data["bmi"] > 25:
+                advice.append("Maintain a healthy weight through balanced diet")
+
+            result = {
+                "diabetes": round(diabetes_risk * 100, 2),
+                "heart": round(heart_risk * 100, 2),
+                "cancer": round(cancer_risk * 100, 2),
+                "checkups": checkups,
+                "advice": advice
+            }
+            return Response(result)
+        
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)

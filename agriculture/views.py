@@ -7,6 +7,9 @@ from .serializers import (
     AgriOfficerSerializer, CropCategorySerializer, FarmerQuerySerializer,
     AgriAdvisorySerializer, AgriUpdateSerializer
 )
+from dpi_platform.forms import FarmerForm
+from dpi_platform.utils import crop_model, yield_model, encoders
+import numpy as np
 
 class CropCategoryViewSet(viewsets.ModelViewSet):
     """Crop category management"""
@@ -159,3 +162,64 @@ class AgriUpdateViewSet(viewsets.ModelViewSet):
             }
         )
         serializer.save(officer=officer)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def recommend_crop(request):
+    """Recommend crop based on farmer input"""
+    form = FarmerForm(request.data)
+    if form.is_valid():
+        data = form.cleaned_data
+
+        try:
+            # Transform inputs using loaded encoders
+            # Note: The original code used encoders["location"].transform([data["location"]])[0]
+            # We assume encoders is a dict of LabelEncoders or OneHotEncoders as per utils.py
+            
+            input_data = [
+                encoders["location"].transform([data["location"]])[0],
+                encoders["season"].transform([data["season"]])[0],
+                encoders["soil_type"].transform([data["soil_type"]])[0],
+                encoders["irrigation"].transform([data["irrigation"]])[0],
+                encoders["rainfall"].transform([data["rainfall"]])[0],
+                data["land_size"]
+            ]
+
+            X = np.array([input_data])
+
+            crop = crop_model.predict(X)[0]
+            # Check if yield_model predicts a scalar or array
+            yield_pred = yield_model.predict(X)
+            yield_level = yield_pred[0] if len(yield_pred.shape) > 0 else yield_pred
+
+            # Advisory (rule-based)
+            fertilizer_map = {
+                "Rice": "Nitrogen-rich fertilizer & water retention needed",
+                "Wheat": "Apply NPK fertilizer before tillering",
+                "Cotton": "Potassium fertilizer & pest monitoring",
+                "Maize": "Balanced NPK fertilizer",
+                "Mustard": "Sulphur-rich fertilizer recommended"
+            }
+
+            advisory = fertilizer_map.get(crop, "General soil nutrient management")
+
+            # Risk alert
+            if data["rainfall"] == "Low":
+                risk = "⚠️ Drought risk"
+            elif data["rainfall"] == "High" and data["soil_type"] == "Clay":
+                risk = "⚠️ Flood risk"
+            else:
+                risk = "No major risk detected"
+
+            result = {
+                "crop": crop,
+                "yield_level": yield_level,
+                "advisory": advisory,
+                "risk": risk
+            }
+            return Response(result)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
