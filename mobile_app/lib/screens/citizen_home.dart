@@ -101,7 +101,7 @@ class DashboardTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         const Text(
-          'Welcome to DPI Platform',
+          'Welcome to Seva Setu',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),

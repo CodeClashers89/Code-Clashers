@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          'DPI Platform',
+                          'Seva Setu',
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,

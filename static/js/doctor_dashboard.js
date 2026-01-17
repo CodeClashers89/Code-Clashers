@@ -1,5 +1,5 @@
 /**
- * DPI Platform - Doctor Terminal Logic
+ * Seva Setu - Doctor Terminal Logic
  * Refined and Optimized Version
  */
 
