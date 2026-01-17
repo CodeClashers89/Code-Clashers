@@ -37,7 +37,7 @@ class FarmerQuerySerializer(serializers.ModelSerializer):
     class Meta:
         model = FarmerQuery
         fields = '__all__'
-        read_only_fields = ['query_id', 'created_at', 'updated_at']
+        read_only_fields = ['query_id', 'created_at', 'updated_at', 'farmer']
     
     def create(self, validated_data):
         # Generate unique query ID

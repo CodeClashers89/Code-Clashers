@@ -16,6 +16,7 @@ function checkStaffAuth() {
 async function initializeDashboard() {
     loadDashboardStats();
     loadComplaints();
+    loadCategories();
 }
 
 async function loadDashboardStats() {
@@ -29,9 +30,20 @@ async function loadDashboardStats() {
     }
 }
 
-async function loadComplaints() {
+async function loadComplaints(category = null, priority = null) {
     try {
-        const response = await apiCall('/city/complaints/');
+        let url = '/city/complaints/';
+        const params = [];
+        if (category) {
+            params.push(`category=${encodeURIComponent(category)}`);
+        }
+        if (priority) {
+            params.push(`priority=${encodeURIComponent(priority)}`);
+        }
+        if (params.length > 0) {
+            url += '?' + params.join('&');
+        }
+        const response = await apiCall(url);
         const container = document.getElementById('complaints-table-body');
         const allContainer = document.getElementById('all-complaints-table-body');
 
@@ -40,7 +52,7 @@ async function loadComplaints() {
         if (!container && !allContainer) return;
 
         const html = complaints.length === 0
-            ? '<tr><td colspan="5" class="text-center">No complaints found.</td></tr>'
+            ? '<tr><td colspan="6" class="text-center">No complaints found.</td></tr>'
             : complaints.map(c => `
                 <tr>
                     <td>${c.complaint_id}</td>
@@ -52,6 +64,7 @@ async function loadComplaints() {
                         <div>${c.title}</div>
                         <span class="badge badge-secondary">${c.category_name}</span>
                     </td>
+                    <td><span class="badge badge-${getPriorityColor(c.priority)}">${c.priority ? c.priority.toUpperCase() : 'MEDIUM'}</span></td>
                     <td><span class="badge badge-${getStatusColor(c.status)}">${c.status}</span></td>
                     <td>
                         <div style="display: flex; gap: 0.5rem;">
@@ -125,6 +138,33 @@ function showSection(sectionName) {
     }
 }
 
+async function loadCategories() {
+    try {
+        const categories = await apiCall('/city/categories/');
+        const filter = document.getElementById('category-filter');
+        if (filter) {
+            // Keep the "All Categories" option and append others
+            filter.innerHTML = '<option value="">All Categories</option>' +
+                categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Failed to load categories:', error);
+    }
+}
+
+let currentCategoryFilter = null;
+let currentPriorityFilter = null;
+
+window.handleCategoryFilter = function (value) {
+    currentCategoryFilter = value || null;
+    loadComplaints(currentCategoryFilter, currentPriorityFilter);
+};
+
+window.handlePriorityFilter = function (value) {
+    currentPriorityFilter = value || null;
+    loadComplaints(currentCategoryFilter, currentPriorityFilter);
+};
+
 function getStatusColor(status) {
     switch (status) {
         case 'submitted': return 'warning';
@@ -132,6 +172,16 @@ function getStatusColor(status) {
         case 'resolved': return 'success';
         case 'closed': return 'secondary';
         default: return 'info';
+    }
+}
+
+function getPriorityColor(priority) {
+    switch (priority?.toLowerCase()) {
+        case 'high': return 'high';
+        case 'urgent': return 'high';
+        case 'medium': return 'medium';
+        case 'low': return 'low';
+        default: return 'medium';
     }
 }
 

@@ -7,6 +7,10 @@ from .serializers import (
     CityStaffSerializer, ComplaintCategorySerializer,
     ComplaintSerializer, ComplaintResponseSerializer
 )
+from .ai_utils import analyze_complaint_priority
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ComplaintCategoryViewSet(viewsets.ModelViewSet):
     """Complaint category management"""
@@ -28,16 +32,42 @@ class ComplaintViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return Complaint.objects.none()
-        if user.role == 'city_staff':
-            # Staff should be able to see all complaints to pick them up, 
-            # or just those assigned to them. Seeing all is better for picking.
-            return Complaint.objects.all().order_by('-created_at')
-        elif user.role == 'citizen':
-            return Complaint.objects.filter(citizen=user).order_by('-created_at')
-        return Complaint.objects.all()
+            
+        queryset = Complaint.objects.all().order_by('-created_at')
+        
+        if user.role == 'citizen':
+            queryset = queryset.filter(citizen=user)
+        
+        # Category filtering
+        category = self.request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(category__name__iexact=category)
+        
+        # Priority filtering
+        priority = self.request.query_params.get('priority')
+        if priority:
+            queryset = queryset.filter(priority__iexact=priority)
+            
+        return queryset
     
     def perform_create(self, serializer):
-        serializer.save(citizen=self.request.user)
+        """Create complaint and automatically assign AI-generated priority"""
+        complaint = serializer.save(citizen=self.request.user)
+        
+        # Analyze and assign priority using AI
+        try:
+            category_name = complaint.category.name if complaint.category else ""
+            ai_priority = analyze_complaint_priority(
+                title=complaint.title,
+                description=complaint.description,
+                category=category_name
+            )
+            complaint.priority = ai_priority
+            complaint.save(update_fields=['priority'])
+            logger.info(f"Assigned AI priority '{ai_priority}' to complaint {complaint.complaint_id}")
+        except Exception as e:
+            logger.error(f"Failed to assign AI priority: {str(e)}")
+            # Complaint is still created with default priority
     
     @action(detail=True, methods=['post'])
     def respond(self, request, pk=None):

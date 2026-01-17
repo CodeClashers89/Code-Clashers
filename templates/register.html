@@ -233,6 +233,7 @@
             <div id="success-message" class="message success-message"></div>
 
             <form id="register-form">
+                {% csrf_token %}
                 <div class="grid grid-2">
                     <div class="form-group">
                         <label>First Name</label>
@@ -361,8 +362,12 @@
             }
 
             try {
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 const response = await fetch('/api/accounts/register/', {
                     method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
                     body: formData
                 });
 

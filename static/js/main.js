@@ -42,6 +42,12 @@ async function apiCall(endpoint, method = 'GET', data = null, requireAuth = fals
         return;
     }
 
+    // Add CSRF Token
+    const csrfToken = getCookie('csrftoken');
+    if (csrfToken) {
+        options.headers['X-CSRFToken'] = csrfToken;
+    }
+
     if (data) {
         options.body = JSON.stringify(data);
     }
@@ -59,7 +65,20 @@ async function apiCall(endpoint, method = 'GET', data = null, requireAuth = fals
         const result = await response.json();
 
         if (!response.ok) {
-            throw new Error(result.message || result.detail || 'API request failed');
+            let errorMsg = result.message || result.detail || 'API request failed';
+
+            // Handle DRF validation errors (objects/arrays)
+            if (typeof result === 'object' && !result.message && !result.detail) {
+                const errors = [];
+                for (const [key, value] of Object.entries(result)) {
+                    errors.push(`${key}: ${Array.isArray(value) ? value.join(', ') : value}`);
+                }
+                if (errors.length > 0) {
+                    errorMsg = errors.join(' | ');
+                }
+            }
+
+            throw new Error(errorMsg);
         }
 
         return result;
@@ -321,3 +340,23 @@ document.addEventListener('DOMContentLoaded', () => {
         loadComplaints();
     }
 });
+
+/**
+ * Get cookie value by name
+ * @param {string} name - The name of the cookie to retrieve
+ * @returns {string|null} - The cookie value or null if not found
+ */
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}

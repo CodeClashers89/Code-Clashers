@@ -267,7 +267,10 @@
 
             <div id="error-message" class="error-message"></div>
 
+            <div id="error-message" class="error-message"></div>
+
             <form id="unified-login-form">
+                {% csrf_token %}
                 <div class="form-group">
                     <label>Username / ID</label>
                     <input type="text" id="username" placeholder="Enter your username" required>
@@ -279,7 +282,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Identity Verification</label>
+                    <label>Identity Verification <span
+                            style="font-weight: 400; color: #64748b; font-size: 0.75rem; text-transform: none; margin-left: 0.5rem;">(Not
+                            required for Administrators)</span></label>
                     <div class="camera-box">
                         <video id="video" autoplay playsinline
                             style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
@@ -388,52 +393,64 @@
                 const video = document.getElementById('video');
                 const canvas = document.getElementById('canvas');
 
-                if (!stream) {
-                    errorDiv.textContent = "Please enable camera and verify your face.";
-                    errorDiv.style.display = 'block';
-                    return;
+                // Capture Face if stream is active
+                if (stream) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+
+                    canvas.toBlob(async (blob) => {
+                        submitLogin(username, password, blob);
+                    }, 'image/jpeg');
+                } else {
+                    // Try login without face (will work for admin only)
+                    submitLogin(username, password, null);
+                }
+            });
+
+            async function submitLogin(username, password, faceBlob) {
+                const errorDiv = document.getElementById('error-message');
+                const btn = document.getElementById('login-btn');
+                const originalText = btn.textContent;
+
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+                if (faceBlob) {
+                    formData.append('image', faceBlob, 'face.jpg');
                 }
 
-                // Capture Face
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0);
+                try {
+                    btn.textContent = "Verifying Credentials...";
+                    btn.disabled = true;
+                    errorDiv.style.display = 'none';
 
-                canvas.toBlob(async (blob) => {
-                    const formData = new FormData();
-                    formData.append('username', username);
-                    formData.append('password', password);
-                    formData.append('image', blob, 'face.jpg');
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    const response = await fetch('/api/accounts/login/face/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: formData
+                    });
 
-                    try {
-                        const btn = document.getElementById('login-btn');
-                        const originalText = btn.textContent;
-                        btn.textContent = "Verifying Credentials...";
-                        btn.disabled = true;
+                    const data = await response.json();
 
-                        const response = await fetch('/api/accounts/login/face/', {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        const data = await response.json();
-
-                        if (response.ok) {
-                            handleLoginSuccess(data);
-                        } else {
-                            errorDiv.textContent = data.error || data.non_field_errors?.[0] || 'Authentication failed.';
-                            errorDiv.style.display = 'block';
-                            btn.textContent = originalText;
-                            btn.disabled = false;
-                        }
-                    } catch (error) {
-                        errorDiv.textContent = 'System error. Please try again.';
+                    if (response.ok) {
+                        handleLoginSuccess(data);
+                    } else {
+                        errorDiv.textContent = data.error || data.non_field_errors?.[0] || 'Authentication failed.';
                         errorDiv.style.display = 'block';
-                        document.getElementById('login-btn').textContent = "Secure Login";
-                        document.getElementById('login-btn').disabled = false;
+                        btn.textContent = originalText;
+                        btn.disabled = false;
                     }
-                }, 'image/jpeg');
-            });
+                } catch (error) {
+                    errorDiv.textContent = 'System error. Please try again.';
+                    errorDiv.style.display = 'block';
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            }
 
             function handleLoginSuccess(data) {
                 localStorage.setItem('authToken', data.access);

@@ -32,11 +32,12 @@ class ComplaintSerializer(serializers.ModelSerializer):
     responses = ComplaintResponseSerializer(many=True, read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
     citizen_name = serializers.CharField(source='citizen.get_full_name', read_only=True)
+    priority_display = serializers.CharField(source='get_priority_display', read_only=True)
     
     class Meta:
         model = Complaint
         fields = '__all__'
-        read_only_fields = ['complaint_id', 'created_at', 'updated_at']
+        read_only_fields = ['complaint_id', 'created_at', 'updated_at', 'citizen', 'priority']
     
     def create(self, validated_data):
         # Generate unique complaint ID

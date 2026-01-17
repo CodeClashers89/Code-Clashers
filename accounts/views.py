@@ -45,22 +45,43 @@ def login(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def face_login(request):
-    """Unified login endpoint: Username + Password + Face"""
+    """Unified login endpoint: Username + Password + Face (Optional for Admin)"""
     username = request.data.get('username')
     password = request.data.get('password')
     face_image = request.FILES.get('image')
     
-    if not username or not password or not face_image:
-        return Response({'error': 'Username, password, and face image are required'}, status=status.HTTP_400_BAD_REQUEST)
+    if not username or not password:
+        return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
     
     # 1. Verify credentials first
+    print(f"DEBUG: Attempting login for username: {username}")
     user = authenticate(username=username, password=password)
+    print(f"DEBUG: Authenticate result: {user}")
     
     if not user:
+        print("DEBUG: Authentication failed")
         return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
         
+    print(f"DEBUG: User role: {user.role}, Is Approved: {user.is_approved}")
+    
     if not user.is_approved:
         return Response({'error': 'Your account is pending approval'}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Admin Bypass
+    if user.role == 'admin':
+        auth_login(request, user)
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': CustomUserSerializer(user).data,
+            'confidence': 100.0,
+            'message': 'Admin login successful'
+        })
+        
+    # For non-admins, require face image
+    if not face_image:
+        return Response({'error': 'Face verification required for this user role. Please enable camera.'}, status=status.HTTP_400_BAD_REQUEST)
         
     # 2. Get profile and face token
     try:

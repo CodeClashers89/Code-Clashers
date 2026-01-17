@@ -212,3 +212,8 @@ LOGOUT_REDIRECT_URL = 'login'
 FACEPP_API_KEY = 'auD3kLcZ0Zx8j7O8w9EbIRFb2LnnEolv'
 FACEPP_API_SECRET = 'qAS2J5D05RCrMiePco79X_j4uSkS7Mqq'
 FACEPP_API_URL = 'https://api-us.faceplusplus.com/facepp/v3'
+
+# OpenAI Configuration
+OPENAI_API_KEY = ''  # Add your OpenAI API key here or use environment variable
+OPENAI_MODEL = 'gpt-4o-mini'
+
