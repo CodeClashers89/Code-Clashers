@@ -15,6 +15,7 @@ urlpatterns = [
     
     # API endpoints
     path('api/accounts/', include('accounts.urls')),
+    path('social-auth/', include('social_django.urls', namespace='social')),
     path('api/core/', include('core.urls')),
     path('api/healthcare/', include('healthcare.urls')),
     path('api/city/', include('city_services.urls')),
