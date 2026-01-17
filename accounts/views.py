@@ -1,9 +1,10 @@
+from django.shortcuts import render, redirect
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, logout, login as auth_login
 from .models import CustomUser, UserProfile, ApprovalRequest
 from .serializers import (
     CustomUserSerializer, UserRegistrationSerializer, 
@@ -31,6 +32,7 @@ def login(request):
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.validated_data['user']
+        auth_login(request, user)
         refresh = RefreshToken.for_user(user)
         return Response({
             'refresh': str(refresh),
@@ -44,6 +46,14 @@ def login(request):
 def profile(request):
     """Get current user profile"""
     return Response(CustomUserSerializer(request.user).data)
+
+@api_view(['POST', 'GET'])
+def user_logout(request):
+    """User logout endpoint"""
+    logout(request)
+    if request.path.startswith('/api/'):
+        return Response({'message': 'Logged out successfully'})
+    return redirect('login')
 
 class ApprovalRequestViewSet(viewsets.ModelViewSet):
     """Approval request management"""

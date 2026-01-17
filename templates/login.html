@@ -65,11 +65,12 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Store tokens
+                    // Store tokens and user info
                     localStorage.setItem('authToken', data.access);
                     localStorage.setItem('refreshToken', data.refresh);
                     localStorage.setItem('userRole', data.user.role);
-                    localStorage.setItem('userName', data.user.username);
+                    localStorage.setItem('userName', `${data.user.first_name} ${data.user.last_name}`.trim() || data.user.username);
+                    localStorage.setItem('userEmail', data.user.email || '');
 
                     // Redirect based on role
                     const role = data.user.role;
@@ -86,8 +87,19 @@
                     } else {
                         window.location.href = '/';
                     }
+
                 } else {
-                    errorDiv.textContent = data.non_field_errors ? data.non_field_errors[0] : 'Login failed. Please check your credentials.';
+                    let errorMessage = 'Login failed. Please check your credentials.';
+                    if (data.non_field_errors) {
+                        errorMessage = data.non_field_errors[0];
+                    } else if (data.detail) {
+                        errorMessage = data.detail;
+                    } else if (typeof data === 'object') {
+                        // Handle field errors
+                        const firstKey = Object.keys(data)[0];
+                        errorMessage = `${firstKey}: ${data[firstKey][0]}`;
+                    }
+                    errorDiv.textContent = errorMessage;
                     errorDiv.classList.remove('hidden');
                 }
             } catch (error) {

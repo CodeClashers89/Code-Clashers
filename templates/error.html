@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - DPI Platform</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-secondary);">
+    <div class="card text-center" style="max-width: 500px; padding: 3rem;">
+        <div style="font-size: 5rem; margin-bottom: 1.5rem;">⚠️</div>
+        <h1 style="color: var(--danger-color); mb-2;">Oops!</h1>
+        <p style="font-size: 1.25rem; color: var(--text-secondary); mb-3;">
+            {{ message|default:"Something went wrong." }}
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <a href="/" class="btn btn-primary">Go to Home</a>
+            <a href="/login/" class="btn btn-outline">Login</a>
+        </div>
+    </div>
+</body>
+</html>

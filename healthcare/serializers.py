@@ -1,44 +1,57 @@
 from rest_framework import serializers
 from .models import Doctor, Appointment, MedicalRecord, Prescription, FollowUp, DoctorUnavailability
 
+from accounts.models import CustomUser
+from accounts.serializers import CustomUserSerializer
+
 class DoctorSerializer(serializers.ModelSerializer):
-    user_details = serializers.SerializerMethodField()
+    user = CustomUserSerializer(read_only=True)
     
     class Meta:
         model = Doctor
         fields = '__all__'
-    
-    def get_user_details(self, obj):
-        return {
-            'username': obj.user.username,
-            'full_name': obj.user.get_full_name(),
-            'email': obj.user.email,
-            'phone': obj.user.phone_number
-        }
 
 class AppointmentSerializer(serializers.ModelSerializer):
     doctor_name = serializers.CharField(source='doctor.user.get_full_name', read_only=True)
-    patient_name = serializers.CharField(source='patient.get_full_name', read_only=True)
+    patient = CustomUserSerializer(read_only=True)
+    medical_record_id = serializers.SerializerMethodField()
     
     class Meta:
         model = Appointment
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
+    def get_medical_record_id(self, obj):
+        record = obj.medical_record.last()
+        return record.id if record else None
+
 class PrescriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prescription
         fields = '__all__'
+        read_only_fields = ['medical_record']
 
 class MedicalRecordSerializer(serializers.ModelSerializer):
     prescriptions = PrescriptionSerializer(many=True, read_only=True)
     doctor_name = serializers.CharField(source='doctor.user.get_full_name', read_only=True)
-    patient_name = serializers.CharField(source='patient.get_full_name', read_only=True)
+    patient = CustomUserSerializer(read_only=True)
+    patient_id = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), source='patient', write_only=True
+    )
     
     class Meta:
         model = MedicalRecord
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
+
+    def create(self, validated_data):
+        prescriptions_data = self.context['request'].data.get('prescriptions', [])
+        medical_record = MedicalRecord.objects.create(**validated_data)
+        
+        for prescription_data in prescriptions_data:
+            Prescription.objects.create(medical_record=medical_record, **prescription_data)
+            
+        return medical_record
 
 class FollowUpSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,3 +62,4 @@ class DoctorUnavailabilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = DoctorUnavailability
         fields = '__all__'
+        read_only_fields = ['doctor']

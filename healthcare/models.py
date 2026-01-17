@@ -102,9 +102,19 @@ class FollowUp(models.Model):
 
 class DoctorUnavailability(models.Model):
     """Doctor availability management"""
+    RECURRENCE_CHOICES = (
+        ('none', 'None'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+    )
+    
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='unavailability_periods')
     start_date = models.DateField()
     end_date = models.DateField()
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+    is_recurring = models.BooleanField(default=False)
+    recurrence_pattern = models.CharField(max_length=20, choices=RECURRENCE_CHOICES, default='none')
     reason = models.CharField(max_length=200)
     
     def __str__(self):

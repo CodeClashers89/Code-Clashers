@@ -10,7 +10,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ['avatar', 'bio', 'city', 'state', 'pincode']
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer(read_only=True)
+    profile = serializers.SerializerMethodField()
+    
+    def get_profile(self, obj):
+        try:
+            return UserProfileSerializer(obj.profile).data
+        except UserProfile.DoesNotExist:
+            return None
     
     class Meta:
         model = CustomUser
@@ -59,7 +65,19 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     
     def validate(self, data):
-        user = authenticate(**data)
+        username = data.get('username')
+        password = data.get('password')
+        
+        user = authenticate(username=username, password=password)
+        
+        # If username authentication fails, try email
+        if not user and '@' in username:
+            try:
+                user_obj = CustomUser.objects.get(email=username)
+                user = authenticate(username=user_obj.username, password=password)
+            except CustomUser.DoesNotExist:
+                pass
+                
         if not user:
             raise serializers.ValidationError("Invalid credentials")
         if not user.is_approved:

@@ -6,9 +6,12 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
+from accounts.views import user_logout
+import healthcare.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('logout/', user_logout, name='logout'),
     
     # API endpoints
     path('api/accounts/', include('accounts.urls')),
@@ -22,7 +25,9 @@ urlpatterns = [
     path('login/', TemplateView.as_view(template_name='login.html'), name='login'),
     path('register/', TemplateView.as_view(template_name='register.html'), name='register'),
     path('citizen/', TemplateView.as_view(template_name='citizen/portal.html'), name='citizen-portal'),
-    path('doctor/', TemplateView.as_view(template_name='healthcare/doctor_dashboard.html'), name='doctor-dashboard'),
+    path('doctor/', include([
+        path('', healthcare.views.doctor_dashboard, name='doctor-dashboard'),
+    ])),
     path('city-staff/', TemplateView.as_view(template_name='city/staff_dashboard.html'), name='city-staff-dashboard'),
     path('agri-officer/', TemplateView.as_view(template_name='agriculture/officer_dashboard.html'), name='agri-officer-dashboard'),
     path('admin-dashboard/', TemplateView.as_view(template_name='admin/dashboard.html'), name='admin-dashboard'),

@@ -6,6 +6,138 @@
     <title>Doctor Dashboard - DPI Platform</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        .section-content {
+            display: none;
+        }
+        .section-content.active {
+            display: block;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .filter-bar select,
+        .filter-bar input {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .patient-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+        .patient-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .unavailability-item {
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: 10000;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        .notification.success {
+            background: var(--success-color);
+            color: white;
+        }
+        .notification.error {
+            background: var(--danger-color);
+            color: white;
+        }
+        .notification.show {
+            display: block;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            font-weight: 700;
+        }
+        .history-record {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .history-body p {
+            margin-bottom: 0.75rem;
+        }
+        .prescriptions-section {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-top: 1rem;
+        }
+        .prescription-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .prescription-item:last-child {
+            border-bottom: none;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -15,64 +147,410 @@
                 <p style="font-size: 0.875rem; color: var(--text-muted);">Doctor Portal</p>
             </div>
             <ul class="sidebar-menu">
-                <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active">📊 Dashboard</a></li>
-                <li class="sidebar-item"><a href="#appointments" class="sidebar-link">📅 Appointments</a></li>
-                <li class="sidebar-item"><a href="#patients" class="sidebar-link">👥 Patients</a></li>
-                <li class="sidebar-item"><a href="#records" class="sidebar-link">📋 Medical Records</a></li>
-                <li class="sidebar-item"><a href="#unavailability" class="sidebar-link">⏰ Unavailability</a></li>
+                <li class="sidebar-item"><a href="#" data-section="dashboard" class="sidebar-link active">📊 Dashboard</a></li>
+                <li class="sidebar-item"><a href="#" data-section="appointments" class="sidebar-link">📅 Appointments</a></li>
+                <li class="sidebar-item"><a href="#" data-section="patients" class="sidebar-link">👥 Patients</a></li>
+                <li class="sidebar-item"><a href="#" data-section="records" class="sidebar-link">📋 Medical Records</a></li>
+                <li class="sidebar-item"><a href="#" data-section="unavailability" class="sidebar-link">⏰ Unavailability</a></li>
+                <li class="sidebar-item"><a href="#" data-section="profile" class="sidebar-link">👤 Profile</a></li>
                 <li class="sidebar-item"><a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 Logout</a></li>
             </ul>
         </aside>
 
         <main class="main-content">
-            <h1>Doctor Dashboard</h1>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Manage appointments and patient records</p>
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="section-content active">
+                <h1>Doctor Dashboard</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">Welcome back, <span id="doctor-name">{{ user.get_full_name }}</span></p>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value">24</div>
-                    <div class="stat-label">Today's Appointments</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="today-appointments">0</div>
+                        <div class="stat-label">Today's Appointments</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-value" id="total-patients">0</div>
+                        <div class="stat-label">Total Patients</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-value" id="pending-appointments">0</div>
+                        <div class="stat-label">Pending Appointments</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        <div class="stat-value" id="completed-today">0</div>
+                        <div class="stat-label">Completed Today</div>
+                    </div>
                 </div>
-                <div class="stat-card success">
-                    <div class="stat-value">156</div>
-                    <div class="stat-label">Total Patients</div>
-                </div>
-                <div class="stat-card warning">
-                    <div class="stat-value">8</div>
-                    <div class="stat-label">Pending Approvals</div>
+
+                <div class="card">
+                    <h3>Today's Schedule</h3>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Patient</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="today-schedule">
+                                <tr>
+                                    <td colspan="5" class="text-center">
+                                        <div class="spinner"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
-                <h3>Today's Appointments</h3>
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Patient</th>
-                                <th>Reason</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="appointments-table">
-                            <tr>
-                                <td>09:00 AM</td>
-                                <td>John Doe</td>
-                                <td>Regular Checkup</td>
-                                <td><span class="badge badge-info">Scheduled</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary">View</button>
-                                    <button class="btn btn-sm btn-secondary">Complete</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Appointments Section -->
+            <div id="appointments-section" class="section-content">
+                <h1>Appointments Management</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">View and manage all appointments</p>
+
+                <div class="filter-bar">
+                    <select id="appointment-status-filter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="no_show">No Show</option>
+                    </select>
+                    <input type="date" id="appointment-date-filter" class="form-input">
+                    <input type="text" id="appointment-search" class="form-input" placeholder="Search patient...">
+                </div>
+
+                <div class="card">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Patient</th>
+                                    <th>Contact</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appointments-table">
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        <div class="spinner"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patients Section -->
+            <div id="patients-section" class="section-content">
+                <h1>My Patients</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">View patient information and history</p>
+
+                <div class="filter-bar">
+                    <input type="text" id="patient-search" class="form-input" placeholder="Search by name, email, or phone...">
+                </div>
+
+                <div id="patients-list">
+                    <div class="text-center">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Records Section -->
+            <div id="records-section" class="section-content">
+                <h1>Medical Records</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">Create and view medical records</p>
+
+                <button class="btn btn-primary mb-3" onclick="openCreateRecordModal()">➕ Create New Record</button>
+
+                <div class="filter-bar">
+                    <input type="text" id="record-search" class="form-input" placeholder="Search by patient name...">
+                    <input type="date" id="record-date-filter" class="form-input">
+                </div>
+
+                <div id="records-list">
+                    <div class="text-center">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unavailability Section -->
+            <div id="unavailability-section" class="section-content">
+                <h1>Manage Unavailability</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">Set periods when you're unavailable</p>
+
+                <button class="btn btn-primary mb-3" onclick="openUnavailabilityModal()">➕ Add Unavailability Period</button>
+
+                <div id="unavailability-list">
+                    <div class="text-center">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Section -->
+            <div id="profile-section" class="section-content">
+                <h1>My Profile</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">View and update your profile information</p>
+
+                <div class="card">
+                    <div class="profile-header">
+                        <div class="profile-avatar" id="profile-avatar">DR</div>
+                        <div>
+                            <h2 id="profile-full-name">{{ user.get_full_name }}</h2>
+                            <p style="color: var(--text-muted);" id="profile-specialization">Loading...</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div>
+                            <p><strong>Email:</strong> <span id="profile-email">{{ user.email }}</span></p>
+                            <p><strong>Phone:</strong> <span id="profile-phone">{{ user.phone_number }}</span></p>
+                            <p><strong>License Number:</strong> <span id="profile-license">-</span></p>
+                        </div>
+                        <div>
+                            <p><strong>Qualification:</strong> <span id="profile-qualification">-</span></p>
+                            <p><strong>Experience:</strong> <span id="profile-experience">-</span> years</p>
+                            <p><strong>Consultation Fee:</strong> ₹<span id="profile-fee">-</span></p>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <p><strong>Hospital Affiliation:</strong> <span id="profile-hospital">-</span></p>
+                        <p><strong>Availability Status:</strong> <span id="profile-availability" class="badge badge-success">Available</span></p>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
-    <script src="{% static 'js/main.js' %}"></script>
+
+    <!-- Appointment Details Modal -->
+    <div id="appointment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Appointment Details</h3>
+                <button class="modal-close" onclick="closeModal('appointment-modal')">&times;</button>
+            </div>
+            <div id="appointment-details"></div>
+        </div>
+    </div>
+
+    <!-- Create Medical Record Modal -->
+    <div id="create-record-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Medical Record</h3>
+                <button class="modal-close" onclick="closeModal('create-record-modal')">&times;</button>
+            </div>
+            <form id="create-record-form">
+                <div class="form-group">
+                    <label class="form-label">Patient</label>
+                    <select id="record-patient" class="form-select" required>
+                        <option value="">Select Patient</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Symptoms</label>
+                    <textarea id="record-symptoms" class="form-textarea" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Diagnosis</label>
+                    <textarea id="record-diagnosis" class="form-textarea" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Treatment Plan</label>
+                    <textarea id="record-treatment" class="form-textarea" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea id="record-notes" class="form-textarea"></textarea>
+                </div>
+
+                <!-- Prescription Section -->
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <label class="form-label" style="margin: 0;">Prescriptions</label>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="addMedicineRow()">+ Add Medicine</button>
+                    </div>
+                    <div id="prescriptions-container">
+                        <!-- Medicine rows will be added here dynamically -->
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create Record</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Patient History Modal -->
+    <div id="patient-history-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Patient History - <span id="patient-history-name"></span></h3>
+                <button class="modal-close" onclick="closeModal('patient-history-modal')">&times;</button>
+            </div>
+            <div id="patient-history-content" style="max-height: 500px; overflow-y: auto;">
+                <div class="text-center">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medicine Row Template (hidden) -->
+    <template id="medicine-row-template">
+        <div class="medicine-row" style="border: 1px solid var(--border-color); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; position: relative;">
+            <button type="button" class="btn btn-sm btn-danger" onclick="removeMedicineRow(this)" style="position: absolute; top: 0.5rem; right: 0.5rem;">×</button>
+            
+            <div class="grid grid-2" style="gap: 1rem;">
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label class="form-label">Medicine Name</label>
+                    <input type="text" class="form-input medicine-name" placeholder="e.g., Paracetamol" list="common-medicines">
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label class="form-label">Dosage</label>
+                    <input type="text" class="form-input medicine-dosage" placeholder="e.g., 500mg, 1 tablet">
+                </div>
+            </div>
+
+            <div class="grid grid-2" style="gap: 1rem;">
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label class="form-label">Frequency</label>
+                    <select class="form-select medicine-frequency">
+                        <option value="">Select frequency</option>
+                        <option value="Once daily">Once daily</option>
+                        <option value="Twice daily">Twice daily</option>
+                        <option value="Thrice daily">Thrice daily</option>
+                        <option value="Four times daily">Four times daily</option>
+                        <option value="Every 4 hours">Every 4 hours</option>
+                        <option value="Every 6 hours">Every 6 hours</option>
+                        <option value="Every 8 hours">Every 8 hours</option>
+                        <option value="As needed">As needed</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label class="form-label">Timing</label>
+                    <div class="medicine-timings-container" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <select class="form-select medicine-timing">
+                            <option value="">Select timing</option>
+                            <option value="Before breakfast">Before breakfast</option>
+                            <option value="After breakfast">After breakfast</option>
+                            <option value="Before lunch">Before lunch</option>
+                            <option value="After lunch">After lunch</option>
+                            <option value="Before dinner">Before dinner</option>
+                            <option value="After dinner">After dinner</option>
+                            <option value="At bedtime">At bedtime</option>
+                            <option value="Empty stomach">Empty stomach</option>
+                            <option value="With food">With food</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2" style="gap: 1rem;">
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label class="form-label">Duration</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="number" class="form-input medicine-duration-value" placeholder="7" style="flex: 1;" min="1">
+                        <select class="form-select medicine-duration-unit" style="flex: 1;">
+                            <option value="days">Days</option>
+                            <option value="weeks">Weeks</option>
+                            <option value="months">Months</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label class="form-label">Additional Instructions</label>
+                    <input type="text" class="form-input medicine-instructions" placeholder="e.g., Take with water">
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Common Medicines Datalist -->
+    <datalist id="common-medicines">
+        <option value="Paracetamol">
+        <option value="Ibuprofen">
+        <option value="Amoxicillin">
+        <option value="Azithromycin">
+        <option value="Ciprofloxacin">
+        <option value="Omeprazole">
+        <option value="Pantoprazole">
+        <option value="Cetirizine">
+        <option value="Loratadine">
+        <option value="Metformin">
+        <option value="Aspirin">
+        <option value="Atorvastatin">
+        <option value="Amlodipine">
+        <option value="Losartan">
+        <option value="Levothyroxine">
+        <option value="Vitamin D3">
+        <option value="Calcium">
+        <option value="Multivitamin">
+    </datalist>
+
+    <!-- Unavailability Modal -->
+    <div id="unavailability-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Unavailability Period</h3>
+                <button class="modal-close" onclick="closeModal('unavailability-modal')">&times;</button>
+            </div>
+            <form id="unavailability-form">
+                <div class="form-group">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" id="unavail-start" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">End Date</label>
+                    <input type="date" id="unavail-end" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Time (Optional - for partial day/lunch)</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <div style="flex: 1;">
+                            <label class="form-label" style="font-size: 0.8rem;">Start Time</label>
+                            <input type="time" id="unavail-start-time" class="form-input">
+                        </div>
+                        <div style="flex: 1;">
+                            <label class="form-label" style="font-size: 0.8rem;">End Time</label>
+                            <input type="time" id="unavail-end-time" class="form-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Recurrence</label>
+                    <select id="unavail-recurrence" class="form-select">
+                        <option value="none">None (One Time)</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Reason</label>
+                    <input type="text" id="unavail-reason" class="form-input" required placeholder="e.g., Lunch Break, Half Day, Vacation">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Period</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        const CURRENT_USER_ID = {{ user.id|default:0 }};
+    </script>
+    <script src="{% static 'js/doctor_dashboard.js' %}"></script>
 </body>
 </html>
