@@ -49,6 +49,7 @@ async function initializeCitizenPortal() {
         loadCropCategories(),
         loadComplaintCategories(),
         loadAppointments(),
+        loadMedicalHistory(),
         loadMyQueries(),
         loadAgriUpdates(),
         loadComplaints()
@@ -219,6 +220,87 @@ async function loadAppointments() {
     }
 }
 
+// ============ MEDICAL HISTORY FUNCTIONS ============
+
+// Load Medical History
+async function loadMedicalHistory() {
+    try {
+        const response = await apiCall('/healthcare/medical-records/', 'GET', null, true);
+        const container = document.getElementById('medical-history-list');
+
+        if (!container) return;
+
+        const records = response.results || response || [];
+
+        if (records.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>No medical records yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = records.map(record => `
+            <div class="request-card">
+                <h4>Diagnosis: ${record.diagnosis}</h4>
+                <div style="margin: 0.5rem 0; font-size: 0.9rem;">
+                    <p><strong>Doctor:</strong> ${record.doctor_name || 'Unknown'} | <strong>Date:</strong> ${new Date(record.created_at).toLocaleDateString()}</p>
+                    
+                    ${record.symptoms ? `<p><strong>Symptoms:</strong> ${record.symptoms}</p>` : ''}
+                    ${record.treatment_plan ? `<p><strong>Treatment:</strong> ${record.treatment_plan}</p>` : ''}
+                    
+                    ${record.prescriptions && record.prescriptions.length > 0 ? `
+                        <div style="margin-top: 0.5rem;">
+                            <strong>Medicines:</strong>
+                            <ul style="margin: 0.2rem 0 0 1.2rem; color: var(--text-secondary);">
+                                ${record.prescriptions.map(p => `<li>${p.medication_name} - ${p.dosage} (${p.frequency})</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="request-meta">
+                   <button class="btn btn-sm btn-primary" onclick="downloadPrescription(${record.id})">Download Prescription PDF</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load medical history:', error);
+        const container = document.getElementById('medical-history-list');
+        if (container) {
+            container.innerHTML = '<p class="empty-state">Unable to load medical history</p>';
+        }
+    }
+}
+
+// Download Prescription
+async function downloadPrescription(recordId) {
+    try {
+        const token = localStorage.getItem('authToken');
+        showLoading();
+        const response = await fetch(`/api/healthcare/medical-records/${recordId}/prescription_pdf/`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setTimeout(() => window.URL.revokeObjectURL(url), 10000);
+        } else {
+            showNotification('Failed to download PDF', 'error');
+        }
+    } catch (error) {
+        console.error('PDF download error:', error);
+        showNotification('Error downloading PDF', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
 // ============ AGRICULTURE FUNCTIONS ============
 
 // Load crop categories
@@ -278,6 +360,9 @@ async function loadMyQueries() {
 
         const queries = response.results || response || [];
 
+        // Store queries globally for viewing details
+        window.myQueries = queries;
+
         if (queries.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -291,17 +376,26 @@ async function loadMyQueries() {
 
         container.innerHTML = queries.map(query => `
             <div class="request-card">
-                <h4>${query.title}</h4>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h4>${query.title}</h4>
+                    <span class="badge badge-${query.status === 'answered' ? 'success' : query.status === 'under_review' ? 'warning' : 'info'}">
+                        ${query.status}
+                    </span>
+                </div>
                 <p style="color: var(--text-secondary); margin: 0.5rem 0;">
                     ${query.description}
                 </p>
                 <div class="request-meta">
                     <span class="badge badge-info">${query.query_id || 'Pending ID'}</span>
-                    <span class="badge badge-${query.status === 'resolved' ? 'success' : query.status === 'in_progress' ? 'warning' : 'info'}">
-                        ${query.status}
-                    </span>
                     ${query.location ? `<span class="badge badge-secondary">📍 ${query.location}</span>` : ''}
+                    <span class="badge badge-secondary">📅 ${new Date(query.created_at).toLocaleDateString()}</span>
                 </div>
+                
+                ${query.status === 'answered' ? `
+                    <button class="btn btn-sm btn-primary" style="margin-top: 1rem;" onclick="viewQueryResponse(${query.id})">
+                        View Response
+                    </button>
+                ` : ''}
             </div>
         `).join('');
     } catch (error) {
@@ -312,6 +406,59 @@ async function loadMyQueries() {
         }
     }
 }
+
+// View Query Response
+function viewQueryResponse(queryId) {
+    const query = window.myQueries ? window.myQueries.find(q => q.id === queryId) : null;
+    if (!query) return;
+
+    const modal = document.getElementById('response-modal');
+    const content = document.getElementById('response-content');
+
+    if (!modal || !content) return;
+
+    const advisory = (query.advisories && query.advisories.length > 0) ? query.advisories[0] : null;
+
+    content.innerHTML = `
+        <div class="card" style="box-shadow: none; border: 1px solid var(--border-color);">
+            <p><strong>Query:</strong> ${query.title}</p>
+            <p><strong>Ref ID:</strong> ${query.query_id}</p>
+            <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border-color);">
+            ${advisory ? `
+                <h4 style="color: var(--success-color);">Expert Advice</h4>
+                <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+                    ${advisory.advice}
+                </div>
+                <div class="request-meta">
+                    <span class="badge badge-info">👤 Officer: ${advisory.officer_name || 'Agri Officer'}</span>
+                    <span class="badge badge-info">📅 Answered on: ${new Date(advisory.created_at).toLocaleDateString()}</span>
+                    ${advisory.is_validated ? '<span class="badge badge-success">✅ Verified Advice</span>' : ''}
+                </div>
+            ` : '<p class="text-error">Response is being finalized. Please check back soon.</p>'}
+        </div>
+    `;
+
+    modal.classList.add('active');
+}
+
+function closeResponseModal() {
+    const modal = document.getElementById('response-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Expose to window
+window.viewQueryResponse = viewQueryResponse;
+window.closeResponseModal = closeResponseModal;
+window.cancelAppointment = cancelAppointment;
+window.downloadPrescription = downloadPrescription;
+window.submitFarmerQuery = submitFarmerQuery;
+window.bookAppointment = bookAppointment;
+window.submitComplaint = submitComplaint;
+window.showSection = showSection;
+window.logout = logout;
+
 
 // Enhanced load agri updates
 async function loadAgriUpdates() {
@@ -491,9 +638,16 @@ async function loadAllRequests() {
             } else {
                 queriesContainer.innerHTML = queries.map(query => `
                     <div class="request-card">
-                        <h4>${query.title}</h4>
-                        <p>${query.description.substring(0, 100)}...</p>
-                        <span class="badge badge-${query.status === 'resolved' ? 'success' : 'warning'}">${query.status}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <h4>${query.title}</h4>
+                            <span class="badge badge-${query.status === 'answered' ? 'success' : 'warning'}">${query.status}</span>
+                        </div>
+                        <p>${query.description.substring(0, 80)}${query.description.length > 80 ? '...' : ''}</p>
+                        ${query.status === 'answered' ? `
+                            <button class="btn btn-sm btn-primary" style="margin-top: 0.5rem;" onclick="viewQueryResponse(${query.id})">
+                                View Response
+                            </button>
+                        ` : ''}
                     </div>
                 `).join('');
             }

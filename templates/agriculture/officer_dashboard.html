@@ -6,6 +6,10 @@
     <title>Agricultural Officer Dashboard - DPI Platform</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        .section-content { display: none; }
+        .section-content.active { display: block; }
+    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -15,10 +19,10 @@
                 <p style="font-size: 0.875rem; color: var(--text-muted);">Officer Portal</p>
             </div>
             <ul class="sidebar-menu">
-                <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active">📊 Dashboard</a></li>
-                <li class="sidebar-item"><a href="#queries" class="sidebar-link">❓ Farmer Queries</a></li>
-                <li class="sidebar-item"><a href="#advisories" class="sidebar-link">📝 Advisories</a></li>
-                <li class="sidebar-item"><a href="#updates" class="sidebar-link">📢 Post Updates</a></li>
+                <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active" onclick="showSection('dashboard'); return false;">📊 Dashboard</a></li>
+                <li class="sidebar-item"><a href="#queries" class="sidebar-link" onclick="showSection('queries'); return false;">❓ Farmer Queries</a></li>
+                <li class="sidebar-item"><a href="#advisories" class="sidebar-link" onclick="showSection('advisories'); return false;">📝 Advisories</a></li>
+                <li class="sidebar-item"><a href="#updates" class="sidebar-link" onclick="showSection('updates'); return false;">📢 Post Updates</a></li>
                 <li class="sidebar-item"><a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 Logout</a></li>
             </ul>
         </aside>
@@ -27,75 +31,142 @@
             <h1>Agricultural Officer Dashboard</h1>
             <p style="color: var(--text-secondary); margin-bottom: 2rem;">Provide expert advice to farmers</p>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value">38</div>
-                    <div class="stat-label">Pending Queries</div>
-                </div>
-                <div class="stat-card success">
-                    <div class="stat-value">245</div>
-                    <div class="stat-label">Advisories Given</div>
-                </div>
-                <div class="stat-card warning">
-                    <div class="stat-value">12</div>
-                    <div class="stat-label">Updates Posted</div>
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="section-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-pending">0</div>
+                        <div class="stat-label">Pending Queries</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-value" id="stat-advisories">0</div>
+                        <div class="stat-label">Advisories Given</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-value" id="stat-updates">0</div>
+                        <div class="stat-label">Updates Posted</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card mb-3">
-                <h3>Post Agricultural Update</h3>
-                <form>
-                    <div class="form-group">
-                        <label class="form-label">Update Type</label>
-                        <select class="form-select">
-                            <option>Weather Alert</option>
-                            <option>Market Price</option>
-                            <option>Government Scheme</option>
-                            <option>Pest Alert</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Title</label>
-                        <input type="text" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Content</label>
-                        <textarea class="form-textarea"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Post Update</button>
-                </form>
+            <!-- Updates Section -->
+            <div id="updates-section" class="section-content">
+                <div class="card mb-3" id="updates">
+                    <h3>Post Agricultural Update</h3>
+                    <form id="post-update-form">
+                        <div class="form-group">
+                            <label class="form-label">Update Type</label>
+                            <select class="form-select" name="update_type" required>
+                                <option value="weather">Weather Alert</option>
+                                <option value="market">Market Price</option>
+                                <option value="scheme">Government Scheme</option>
+                                <option value="pest">Pest Alert</option>
+                                <option value="advisory">General Advisory</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-input" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Content</label>
+                            <textarea class="form-textarea" name="content" required></textarea>
+                        </div>
+                         <div class="form-group">
+                            <label class="form-label">Target District (Optional)</label>
+                            <input type="text" class="form-input" name="district">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Post Update</button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                     <h3>My Posted Updates</h3>
+                     <div id="my-updates-list">
+                         <div class="spinner"></div>
+                     </div>
+                </div>
             </div>
 
-            <div class="card">
-                <h3>Recent Farmer Queries</h3>
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Farmer</th>
-                                <th>Query</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>AGR-001</td>
-                                <td>Farmer Name</td>
-                                <td>Pest control for wheat crop</td>
-                                <td><span class="badge badge-warning">Submitted</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary">View</button>
-                                    <button class="btn btn-sm btn-secondary">Respond</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Queries Section -->
+            <div id="queries-section" class="section-content">
+                <div class="card">
+                    <h3>All Farmer Queries</h3>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Farmer</th>
+                                    <th>Query</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="queries-table-body">
+                                <tr>
+                                    <td colspan="5" class="text-center">Loading queries...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Advisories Section -->
+            <div id="advisories-section" class="section-content">
+                 <div class="card">
+                     <h3>My Given Advisories</h3>
+                     <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Query Ref</th>
+                                    <th>Advice</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="advisories-table-body">
+                                <tr>
+                                    <td colspan="4" class="text-center">Loading advisories...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                 </div>
             </div>
         </main>
     </div>
+    <div class="modal" id="respond-modal">
+        <div class="modal-content">
+            <h3 id="respond-modal-title">Respond to Query</h3>
+            <form id="respond-form" onsubmit="handleRespond(event)">
+                <div class="form-group">
+                    <label class="form-label">Expert Advice</label>
+                    <textarea class="form-textarea" rows="5" id="advisory-text" required></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeRespondModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Response</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Query Modal -->
+    <div class="modal" id="view-modal">
+        <div class="modal-content">
+            <h3>Query Details</h3>
+            <div id="view-query-content">Loading...</div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeViewModal()">Close</button>
+                <button type="button" class="btn btn-primary" id="view-respond-btn">Respond</button>
+            </div>
+        </div>
+    </div>
+
     <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/agri_officer.js' %}?v=4"></script>
 </body>
 </html>

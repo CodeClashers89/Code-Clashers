@@ -22,11 +22,12 @@ class CropCategorySerializer(serializers.ModelSerializer):
 
 class AgriAdvisorySerializer(serializers.ModelSerializer):
     officer_name = serializers.CharField(source='officer.user.get_full_name', read_only=True)
+    query_ref = serializers.CharField(source='query.query_id', read_only=True)
     
     class Meta:
         model = AgriAdvisory
         fields = '__all__'
-        read_only_fields = ['created_at']
+        read_only_fields = ['created_at', 'officer', 'query']
 
 class FarmerQuerySerializer(serializers.ModelSerializer):
     advisories = AgriAdvisorySerializer(many=True, read_only=True)
@@ -51,4 +52,4 @@ class AgriUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = AgriUpdate
         fields = '__all__'
-        read_only_fields = ['created_at']
+        read_only_fields = ['created_at', 'officer']

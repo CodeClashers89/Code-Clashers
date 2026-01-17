@@ -200,9 +200,16 @@
                     </form>
                 </div>
 
-                <div class="card">
+                <div class="card mb-3">
                     <h3>My Appointments</h3>
                     <div id="appointments-list">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>My Medical History</h3>
+                    <div id="medical-history-list">
                         <div class="spinner"></div>
                     </div>
                 </div>
@@ -317,6 +324,22 @@
                 </div>
             </div>
         </main>
+    </div>
+    
+    <!-- Response Details Modal -->
+    <div class="modal" id="response-modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>Expert Response</h3>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeResponseModal()">X</button>
+            </div>
+            <div id="response-content">
+                <div class="spinner"></div>
+            </div>
+            <div style="margin-top: 1.5rem; text-align: right;">
+                <button type="button" class="btn btn-primary" onclick="closeResponseModal()">Close</button>
+            </div>
+        </div>
     </div>
 
     <script src="{% static 'js/main.js' %}"></script>
