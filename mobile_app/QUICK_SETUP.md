@@ -2,7 +2,10 @@
 
 ## Your Network Configuration
 
-**Your Computer's WiFi IP:** `120.120.122.113`
+**Your Computer's WiFi IP:** `[YOUR_IP_ADDRESS]` (e.g., `192.168.x.x`)
+
+> [!TIP]
+> Run `ipconfig` (Windows) or `ifconfig` (Mac/Linux) to find your local IPv4 address.
 
 ## ✅ Steps to Test on Your Android Device
 

@@ -139,7 +139,7 @@ Once the app is running on your device:
 ```
 ┌─────────────────────────┐
 │  Your Computer          │
-│  IP: 192.168.1.100     │
+│  IP: [YOUR_IP_ADDRESS] │
 │  Django: 0.0.0.0:8000  │
 └───────────┬─────────────┘
             │
@@ -148,7 +148,7 @@ Once the app is running on your device:
 ┌───────────┴─────────────┐
 │  Android Device         │
 │  Flutter App            │
-│  API: 192.168.1.100:8000│
+│  API: [YOUR_IP]:8000/api│
 └─────────────────────────┘
 ```
 

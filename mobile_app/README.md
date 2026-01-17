@@ -4,15 +4,14 @@ Flutter mobile application for the Digital Public Infrastructure platform.
 
 ## Features
 
-- **Multi-role Authentication**: Login and registration for all user types
-- **Citizen Portal**: Access healthcare, agriculture, and city services
-- **Healthcare**: View appointments and medical records
-- **Agriculture**: Get farming updates and advisories
-- **City Services**: Report and track complaints
-- **Push Notifications**: Local notifications for appointments, updates, and complaint status
-- **Offline Support**: Secure local storage for authentication tokens
-- **Pull-to-Refresh**: Update data with a simple swipe gesture
-- **Material Design**: Beautiful, modern UI following Material Design guidelines
+- **Multi-role Authentication**: Login and registration for Citizens, Doctors, City Staff, and Agri Officers.
+- **Unified Citizen Portal**: One-stop access to Healthcare, Agriculture, and City Services.
+- **Healthcare**: Book appointments, view medical records, and track health history.
+- **Agriculture**: Access farming advisories, pest alerts, and market updates.
+- **City Services**: Report civic issues with locations and track resolution progress.
+- **Real-time Stats**: Admin-level visibility into system usage and service health.
+- **Offline Support**: Secure token caching for seamless access.
+- **Modern UI**: Clean, responsive interface built with Flutter.
 
 ## Prerequisites
 
@@ -57,20 +56,19 @@ Flutter mobile application for the Digital Public Infrastructure platform.
 ```
 mobile_app/
 ├── lib/
-│   ├── main.dart                 # App entry point
+│   ├── main.dart                 # Application entry point
 │   ├── services/
-│   │   ├── auth_service.dart     # Authentication & API service
-│   │   └── notification_service.dart # Push notifications
+│   │   └── auth_service.dart     # Centralized API and Auth logic
 │   └── screens/
-│       ├── login_screen.dart     # Login page
-│       ├── register_screen.dart  # Registration page
-│       ├── citizen_home.dart     # Citizen dashboard
-│       ├── doctor_dashboard.dart # Doctor interface
-│       ├── city_staff_dashboard.dart # City staff interface
-│       └── agri_officer_dashboard.dart # Agri officer interface
-├── android/                      # Android-specific files
-├── ios/                          # iOS-specific files
-└── pubspec.yaml                  # Dependencies
+│       ├── login_screen.dart     # Authentication portal
+│       ├── register_screen.dart  # User onboarding
+│       ├── citizen_home.dart     # Main dashboard for citizens
+│       ├── doctor_dashboard.dart # Specialized doctor view
+│       ├── city_staff_dashboard.dart # City staff management view
+│       └── agri_officer_dashboard.dart # Agri officer advisory view
+├── android/                      # Native Android configuration
+├── ios/                          # Native iOS configuration
+└── pubspec.yaml                  # Flutter dependencies
 ```
 
 ## Demo Credentials

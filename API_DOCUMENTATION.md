@@ -119,6 +119,30 @@ Response:
 }
 ```
 
+### List Users
+**GET** `/accounts/users/`
+
+Requires: Admin role
+
+Response:
+```json
+{
+  "count": 150,
+  "results": [
+    {
+      "id": 1,
+      "username": "citizen1",
+      "email": "citizen@example.com",
+      "first_name": "John",
+      "last_name": "Doe",
+      "role": "citizen",
+      "is_approved": true,
+      "profile": {...}
+    }
+  ]
+}
+```
+
 ---
 
 ## Core Platform API
@@ -170,16 +194,43 @@ Response:
   "total_requests": 5678,
   "pending_approvals": 15,
   "healthcare": {
-    "total_appointments": 450,
-    "pending_appointments": 120
+    "total": 450,
+    "pending": 120
   },
   "city_services": {
-    "total_complaints": 890,
-    "pending_complaints": 45
+    "total": 890,
+    "pending": 45
   },
   "agriculture": {
-    "total_queries": 234,
-    "pending_queries": 38
+    "total": 234,
+    "pending": 38
+  },
+  "role_breakdown": {
+    "citizen": 1000,
+    "doctor": 50,
+    "city_staff": 30,
+    "agri_officer": 25,
+    "admin": 5
+  },
+  "service_usage": {
+    "healthcare": 450,
+    "city_services": 890,
+    "agriculture": 234
+  },
+  "daily_activity": [
+    { "date": "Jan 12", "count": 45 },
+    { "date": "Jan 13", "count": 52 },
+    ...
+  ],
+  "performance": {
+    "healthcare": 45,
+    "city_services": 120,
+    "agriculture": 38
+  },
+  "system_health": {
+    "cpu_usage": 12.5,
+    "memory_usage": 45.8,
+    "avg_response_time": 180
   }
 }
 ```
