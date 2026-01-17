@@ -51,26 +51,40 @@ def dashboard_stats(request):
     """Get dashboard statistics"""
     from django.db.models import Count
     from accounts.models import CustomUser
-    from healthcare.models import Appointment
-    from city_services.models import Complaint
-    from agriculture.models import FarmerQuery
     
+    # Unified counts from ServiceRequest
+    # This replaces individual model counts to ensure consistency across the platform
+    service_usage_raw = ServiceRequest.objects.values('service__service_type').annotate(count=Count('id'))
+    
+    # Map raw DB values to frontend-friendly keys
+    usage_map = {
+        'healthcare': 0,
+        'city': 0,
+        'agriculture': 0
+    }
+    for item in service_usage_raw:
+        stype = item['service__service_type']
+        if stype in usage_map:
+            usage_map[stype] = item['count']
+
     stats = {
         'total_users': CustomUser.objects.count(),
         'total_services': Service.objects.filter(is_active=True).count(),
         'total_requests': ServiceRequest.objects.count(),
         'pending_approvals': 0,
+        
+        # Specific service breakdowns derived from unified ServiceRequest data
         'healthcare': {
-            'total_appointments': Appointment.objects.count(),
-            'pending_appointments': Appointment.objects.filter(status='scheduled').count(),
+            'total': usage_map['healthcare'],
+            'pending': ServiceRequest.objects.filter(service__service_type='healthcare', status='pending').count(),
         },
         'city_services': {
-            'total_complaints': Complaint.objects.count(),
-            'pending_complaints': Complaint.objects.filter(status='submitted').count(),
+            'total': usage_map['city'],
+            'pending': ServiceRequest.objects.filter(service__service_type='city', status='pending').count(),
         },
         'agriculture': {
-            'total_queries': FarmerQuery.objects.count(),
-            'pending_queries': FarmerQuery.objects.filter(status='submitted').count(),
+            'total': usage_map['agriculture'],
+            'pending': ServiceRequest.objects.filter(service__service_type='agriculture', status='pending').count(),
         }
     }
     
@@ -82,17 +96,17 @@ def dashboard_stats(request):
         
         stats['pending_approvals'] = ApprovalRequest.objects.filter(status='pending').count()
         
-        # Add role breakdown for admin
+        # Role breakdown for admin
         stats['role_breakdown'] = {
             role: CustomUser.objects.filter(role=role).count()
             for role, _ in CustomUser.ROLE_CHOICES
         }
         
-        # Add service usage metrics
+        # Service usage for charts (keys must match JS expectations)
         stats['service_usage'] = {
-            'healthcare': Appointment.objects.count(),
-            'city_services': Complaint.objects.count(),
-            'agriculture': FarmerQuery.objects.count()
+            'healthcare': usage_map['healthcare'],
+            'city_services': usage_map['city'],
+            'agriculture': usage_map['agriculture']
         }
 
         # Daily activity for the last 7 days
@@ -106,12 +120,9 @@ def dashboard_stats(request):
             })
         stats['daily_activity'] = daily_activity
 
-        # Calculate REAL performance metrics (average completion time in minutes)
-        # We group by service type and calculate the diff between created_at and completed_at
+        # Calculate performance metrics
         performance = {}
-        service_types = ['healthcare', 'city', 'agriculture']
-        
-        for stype in service_types:
+        for stype in ['healthcare', 'city', 'agriculture']:
             avg_duration = ServiceRequest.objects.filter(
                 service__service_type=stype,
                 status='completed',
@@ -120,12 +131,11 @@ def dashboard_stats(request):
                 duration=ExpressionWrapper(F('completed_at') - F('created_at'), output_field=DurationField())
             ).aggregate(avg_time=Avg('duration'))['avg_time']
             
+            key = stype if stype != 'city' else 'city_services'
             if avg_duration:
-                # Convert duration to total minutes
-                performance[stype if stype != 'city' else 'city_services'] = int(avg_duration.total_seconds() / 60)
+                performance[key] = int(avg_duration.total_seconds() / 60)
             else:
-                # Fallback to a placeholder if no data exists yet, or 0
-                performance[stype if stype != 'city' else 'city_services'] = 0
+                performance[key] = 0
         
         stats['performance'] = performance
 
@@ -135,7 +145,7 @@ def dashboard_stats(request):
             stats['system_health'] = {
                 'cpu_usage': latest_metrics.cpu_usage,
                 'memory_usage': latest_metrics.memory_usage,
-                'avg_response_time': int(latest_metrics.avg_response_time * 1000) # Convert to ms
+                'avg_response_time': int(latest_metrics.avg_response_time * 1000)
             }
         else:
             stats['system_health'] = {

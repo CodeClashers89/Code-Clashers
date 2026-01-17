@@ -69,9 +69,11 @@ class ApprovalRequestViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
         """Approve a service provider"""
+        from django.utils import timezone
         approval_request = self.get_object()
         approval_request.status = 'approved'
         approval_request.reviewed_by = request.user
+        approval_request.reviewed_at = timezone.now()
         approval_request.save()
         
         # Approve the user
@@ -83,9 +85,11 @@ class ApprovalRequestViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         """Reject a service provider"""
+        from django.utils import timezone
         approval_request = self.get_object()
         approval_request.status = 'rejected'
         approval_request.reviewed_by = request.user
+        approval_request.reviewed_at = timezone.now()
         approval_request.admin_notes = request.data.get('notes', '')
         approval_request.save()
         
