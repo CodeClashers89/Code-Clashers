@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9yf-osr!$_45u6t&d2bi+bb3+2gx0h3o0(*2n2$9o7ogd&41km'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-9yf-osr!$_45u6t&d2bi+bb3+2gx0h3o0(*2n2$9o7ogd&41km')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -182,9 +183,9 @@ AUTHENTICATION_BACKENDS = (
 )
 
 # Auth0 Settings
-SOCIAL_AUTH_AUTH0_DOMAIN = 'dev-ysd8z0r02200w27x.us.auth0.com'
-SOCIAL_AUTH_AUTH0_KEY = 'AxaauWhlcukGecAUHk8tzDZs80P9SFwV'
-SOCIAL_AUTH_AUTH0_SECRET = 'Ti7FNKTApURm2Ysu5UihJ3cMYrk8lSZPGfiwL-cSvtD1vJuamqpUofitNdttpx2V'
+SOCIAL_AUTH_AUTH0_DOMAIN = config('SOCIAL_AUTH_AUTH0_DOMAIN', default='dev-ysd8z0r02200w27x.us.auth0.com')
+SOCIAL_AUTH_AUTH0_KEY = config('SOCIAL_AUTH_AUTH0_KEY', default='AxaauWhlcukGecAUHk8tzDZs80P9SFwV')
+SOCIAL_AUTH_AUTH0_SECRET = config('SOCIAL_AUTH_AUTH0_SECRET', default='Ti7FNKTApURm2Ysu5UihJ3cMYrk8lSZPGfiwL-cSvtD1vJuamqpUofitNdttpx2V')
 
 SOCIAL_AUTH_AUTH0_SCOPE = [
     'openid',
@@ -209,11 +210,21 @@ LOGOUT_URL = 'logout'
 LOGOUT_REDIRECT_URL = 'login'
 
 # Face++ API Credentials
-FACEPP_API_KEY = 'KtGZPcOdHRJgE8_GtcIwR8EuTTr5sS2S'
-FACEPP_API_SECRET = 'q_j45mmmE6rqBEiGgzCHvaf9SjSvoltQ'
-FACEPP_API_URL = 'https://api-us.faceplusplus.com/facepp/v3'
-FACEPP_FACESET_TOKEN = 'dd8ba1b86fb9f37bb9657246794a5dad'
+FACEPP_API_KEY = config('FACEPP_API_KEY', default='KtGZPcOdHRJgE8_GtcIwR8EuTTr5sS2S')
+FACEPP_API_SECRET = config('FACEPP_API_SECRET', default='q_j45mmmE6rqBEiGgzCHvaf9SjSvoltQ')
+FACEPP_API_URL = config('FACEPP_API_URL', default='https://api-us.faceplusplus.com/facepp/v3')
+FACEPP_FACESET_TOKEN = config('FACEPP_FACESET_TOKEN', default='dd8ba1b86fb9f37bb9657246794a5dad')
+
 # OpenAI Configuration
-OPENAI_API_KEY = ''  # Add your OpenAI API key here or use environment variable
-OPENAI_MODEL = 'gpt-4o-mini'
+OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
+OPENAI_MODEL = config('OPENAI_MODEL', default='gpt-4o-mini')
+
+# Email Configuration (Brevo SMTP)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST', default='smtp-relay.brevo.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='DPI Platform <noreply@dpi-platform.gov>')
 

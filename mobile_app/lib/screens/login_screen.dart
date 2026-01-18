@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/auth_service.dart';
+import 'register_screen.dart';
+import 'forgot_password_screen.dart';
 import 'dart:io';
 
 class LoginScreen extends StatefulWidget {
@@ -162,7 +164,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           icon: Icons.lock_outline,
                           isPassword: true,
                         ),
-                        const SizedBox(height: 24),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                            ),
+                            child: Text(
+                              'Forgot Password?',
+                              style: GoogleFonts.outfit(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF0B4F87),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         _buildLabel('IDENTITY VERIFICATION'),
                         const SizedBox(height: 8),
                         GestureDetector(

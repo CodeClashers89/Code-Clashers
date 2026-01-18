@@ -320,7 +320,6 @@ Response:
   "message": "Appointment completed"
 }
 ```
-
 ### Create Medical Record
 **POST** `/healthcare/medical-records/`
 
@@ -341,6 +340,7 @@ Request:
   "treatment_plan": "Rest and fluids"
 }
 ```
+*Note: `appointment` is optional; records can be created by selecting a patient directly.*
 
 ### Get Patient History
 **GET** `/healthcare/medical-records/patient_history/?patient_id=1`
@@ -360,6 +360,13 @@ Response:
 ]
 ```
 
+### Download Prescription PDF
+**GET** `/healthcare/medical-records/{id}/prescription_pdf/`
+
+Generates a professionally branded PDF prescription with government healthcare branding, doctor details, and clinical notes.
+
+Response: Binary PDF stream (application/pdf)
+
 ---
 
 ## City Services API
@@ -368,6 +375,8 @@ Response:
 **POST** `/city/complaints/`
 
 Requires: Authentication
+
+*Note: All submitted complaints are automatically analyzed by our **AI Prioritization Engine (GPT-4o-mini)** to assess public safety impact and assign a priority level (low/medium/high).*
 
 Request:
 ```json
@@ -624,6 +633,68 @@ curl -X GET http://127.0.0.1:8000/api/accounts/profile/ \
 # Get dashboard stats
 curl -X GET http://127.0.0.1:8000/api/core/dashboard/stats/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+---
+
+## AI & Machine Learning API
+
+### Predict Disease Risks
+**POST** `/healthcare/predict-disease/`
+
+Provides an AI-driven health risk assessment based on demographic and lifestyle data.
+
+Request:
+```json
+{
+  "age": 45,
+  "gender": "M",
+  "bmi": 28.5,
+  "smoking": "low",
+  "alcohol": "moderate",
+  "activity": "high",
+  "family_diabetes": true,
+  "family_heart": false,
+  "family_cancer": true
+}
+```
+
+Response:
+```json
+{
+  "diabetes": 12.5,
+  "heart": 45.8,
+  "cancer": 22.3,
+  "checkups": ["Blood Sugar Test", "ECG"],
+  "advice": ["Maintain active lifestyle", "Monitor blood pressure"]
+}
+```
+
+### Recommend Crop
+**POST** `/agriculture/recommend-crop/`
+
+Suggests the most suitable crop and predicts yield level using agricultural ML models.
+
+Request:
+```json
+{
+  "location": "North Region",
+  "season": "Monsoon",
+  "soil_type": "Clay",
+  "irrigation": "Canal",
+  "rainfall": "High",
+  "land_size": 5.5
+}
+```
+
+Response:
+```json
+{
+  "crop": "Rice",
+  "yield_level": 85.0,
+  "advisory": "Nitrogen-rich fertilizer & water retention needed",
+  "risk": "No major risk detected"
+}
 ```
 
 ---

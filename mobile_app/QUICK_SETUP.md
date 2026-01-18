@@ -2,7 +2,7 @@
 
 ## Your Network Configuration
 
-**Your Computer's WiFi IP:** `[YOUR_IP_ADDRESS]` (e.g., `192.168.x.x`)
+**Your Computer's WiFi IP:** `10.167.110.93`
 
 > [!TIP]
 > Run `ipconfig` (Windows) or `ifconfig` (Mac/Linux) to find your local IPv4 address.
@@ -63,7 +63,7 @@ Once the app is running on your phone:
 **If app shows "Network Error":**
 - Verify Django server is running with `0.0.0.0:8000`
 - Check both devices are on the same WiFi
-- Test in browser: `http://120.120.122.113:8000/api/core/services/`
+- Test in browser: `http://10.167.110.93:8000/api/core/services/`
 
 **If device not detected:**
 - Try `flutter devices` to see if phone is listed
@@ -77,9 +77,6 @@ Once the app is running on your phone:
 ## 📱 Demo Credentials
 
 - Citizen: `citizen1` / `password123`
-- Doctor: `doctor1` / `password123`
-- City Staff: `citystaff1` / `password123`
-- Agri Officer: `agriofficer1` / `password123`
 
 ---
 

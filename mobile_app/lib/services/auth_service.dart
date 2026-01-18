@@ -214,4 +214,85 @@ class AuthService extends ChangeNotifier {
       body: json.encode(data),
     );
   }
+
+  // --- OTP & Password Reset Methods ---
+
+  Future<Map<String, dynamic>> verifyOtp(String username, String otp, String purpose) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/accounts/verify-otp/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({
+          'username': username,
+          'otp': otp,
+          'purpose': purpose,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return {'success': true};
+      } else {
+        final error = json.decode(response.body);
+        return {'success': false, 'error': error['error'] ?? 'Verification failed'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/accounts/forgot-password/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({'email': email}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'message': data['message'],
+          'username': data['username']
+        };
+      } else {
+        final error = json.decode(response.body);
+        return {'success': false, 'error': error['error'] ?? 'Request failed'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> resetPassword(String username, String otp, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/accounts/reset-password/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({
+          'username': username,
+          'otp': otp,
+          'new_password': newPassword,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return {'success': true};
+      } else {
+        final error = json.decode(response.body);
+        return {'success': false, 'error': error['error'] ?? 'Reset failed'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: $e'};
+    }
+  }
 }

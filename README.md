@@ -5,13 +5,18 @@ The **Digital Public Infrastructure (DPI)** platform is a unified government ser
 
 
 ## Key Features
-- **Multi-role Ecosystem**: Specialized dashboards for Citizens, Doctors, City Staff, Agricultural Officers, and Government Admins.
-- **Unified Healthcare**: Appointment booking, digital medical records, and patient history tracking.
-- **Smart City Services**: Civic complaint reporting with location tracking and resolution workflows.
-- **Agri-Tech Support**: Expert queries for farmers, pest alerts, and real-time market updates.
+- **Citizen-Centric Mobile Experience**: A dedicated Flutter application for citizens to access healthcare, agriculture, and civic services.
+- **Unified Healthcare**: Appointment booking, professional digital prescriptions, and personal health record tracking.
+- **Biometric Security**: Face recognition authentication with automatic token refreshing for seamless mobile access.
+- **Multi-role Backend**: Specialized web portals for Doctors, City Staff, Agricultural Officers, and Government Admins.
+- **Smart City Hub**: Civic complaint reporting with location tracking and automated resolution workflows.
+- **Advanced Admin Analytics**: Comprehensive dashboard for system health monitoring and service performance metrics.
 
-- **Advanced Admin Analytics**: Comprehensive dashboard for system health monitoring, user distribution, and service performance metrics.
-- **Secure Authentication**: JWT-based secure login and multi-role approval workflows for service providers.
+## AI & Machine Learning Capabilities
+The DPI platform leverages state-of-the-art AI and ML to empower citizens:
+- **Predictive Healthcare**: Built-in specialized ML models (Diabetes, Heart Disease, and Cancer) to assess health risks based on patient demographics and clinical parameters.
+- **Smart Agriculture**: Data-driven crop recommendation engine and yield level predictors based on soil type, rainfall, and location.
+- **Intelligent City Services**: Integrated **OpenAI GPT-4o-mini** to automatically analyze and prioritize municipal complaints based on public safety impact and urgency.
 
 ## Tech Stack
 ### Backend
@@ -70,12 +75,12 @@ flutter run
 - **Password**: `admin123` (or as set during superuser creation)
 
 ### Demo Users (Password: `password123`)
-| Role | Username | Dashboard URL |
+| Role | Username | Access Type |
 | :--- | :--- | :--- |
-| **Citizen** | `citizen1` | `/citizen/` |
-| **Doctor** | `doctor1` | `/doctor/` |
-| **City Staff** | `citystaff1` | `/city-staff/` |
-| **Agri Officer** | `agriofficer1` | `/agri-officer/` |
+| **Citizen** | `citizen1` | Mobile App & Web Portal |
+| **Doctor** | `doctor1` | Web Portal Exclusive |
+| **City Staff** | `citystaff1` | Web Portal Exclusive |
+| **Agri Officer** | `agriofficer1` | Web Portal Exclusive |
 
 ---
 **Built for AU Hackathon 2026** 🚀

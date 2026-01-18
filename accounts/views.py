@@ -11,6 +11,7 @@ from .serializers import (
     LoginSerializer, ApprovalRequestSerializer
 )
 from .utils import face_service
+from .email_utils import generate_otp, send_otp_email, send_admin_notification_email, send_approval_status_email
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -19,9 +20,19 @@ def register(request):
     serializer = UserRegistrationSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
+        
+        # 1. Generate and Send OTP for registration
+        otp_code = generate_otp(user, 'registration')
+        send_otp_email(user, otp_code, 'registration')
+        
+        # 2. Notify user about request reaching admin (if not citizen)
+        if user.role != 'citizen':
+            send_admin_notification_email(user)
+            
         return Response({
-            'message': 'Registration successful',
+            'message': 'Registration successful. Please verify the OTP sent to your email.',
             'user': CustomUserSerializer(user).data,
+            'requires_otp': True,
             'requires_approval': user.role in ['doctor', 'city_staff', 'agri_officer']
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -144,6 +155,103 @@ def face_login(request):
             'confidence': result.get('confidence')
         }, status=status.HTTP_401_UNAUTHORIZED)
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_otp(self, request):
+    """Verify OTP for registration or password reset"""
+    username = request.data.get('username')
+    otp_code = request.data.get('otp')
+    purpose = request.data.get('purpose')
+    
+    if not all([username, otp_code, purpose]):
+        return Response({'error': 'Username, OTP, and purpose are required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        user = CustomUser.objects.get(username=username)
+        from .models import OTP
+        from django.utils import timezone
+        
+        otp = OTP.objects.filter(
+            user=user, 
+            otp_code=otp_code, 
+            purpose=purpose, 
+            is_verified=False,
+            expires_at__gt=timezone.now()
+        ).first()
+        
+        if otp:
+            otp.is_verified = True
+            otp.save()
+            return Response({'message': 'OTP verified successfully'})
+        else:
+            return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+            
+    except CustomUser.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def forgot_password(request):
+    """Initiate password reset by sending OTP"""
+    email = request.data.get('email')
+    if not email:
+        return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        user = CustomUser.objects.get(email=email)
+        otp_code = generate_otp(user, 'password_reset')
+        if send_otp_email(user, otp_code, 'password_reset'):
+            return Response({'message': 'OTP sent to your email', 'username': user.username})
+        else:
+            return Response({'error': 'Failed to send email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except CustomUser.DoesNotExist:
+        return Response({'error': 'User with this email does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password(request):
+    """Reset password after OTP verification"""
+    username = request.data.get('username')
+    otp_code = request.data.get('otp')
+    new_password = request.data.get('new_password')
+    
+    if not all([username, otp_code, new_password]):
+        return Response({'error': 'Username, OTP, and new password are required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        user = CustomUser.objects.get(username=username)
+        from .models import OTP
+        from django.utils import timezone
+        
+        otp = OTP.objects.filter(
+            user=user, 
+            otp_code=otp_code, 
+            purpose='password_reset', 
+            is_verified=True # Should be verified first via verify_otp endpoint
+        ).first()
+        
+        if not otp:
+            # Fallback: allow one-step verification and reset if wanted, but best to require verification first
+            otp = OTP.objects.filter(
+                user=user, 
+                otp_code=otp_code, 
+                purpose='password_reset', 
+                is_verified=False,
+                expires_at__gt=timezone.now()
+            ).first()
+            
+        if otp:
+            user.set_password(new_password)
+            user.save()
+            otp.is_verified = True
+            otp.save()
+            return Response({'message': 'Password reset successful'})
+        else:
+            return Response({'error': 'Invalid or unverified OTP'}, status=status.HTTP_400_BAD_REQUEST)
+            
+    except CustomUser.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def profile(request):
@@ -183,7 +291,10 @@ class ApprovalRequestViewSet(viewsets.ModelViewSet):
         approval_request.user.is_approved = True
         approval_request.user.save()
         
-        return Response({'message': 'Approval request approved'})
+        # Send approval email
+        send_approval_status_email(approval_request.user, 'approved')
+        
+        return Response({'message': 'Approval request approved and user notified'})
     
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
@@ -196,7 +307,10 @@ class ApprovalRequestViewSet(viewsets.ModelViewSet):
         approval_request.admin_notes = request.data.get('notes', '')
         approval_request.save()
         
-        return Response({'message': 'Approval request rejected'})
+        # Send rejection email
+        send_approval_status_email(approval_request.user, 'rejected', approval_request.admin_notes)
+        
+        return Response({'message': 'Approval request rejected and user notified'})
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """Admin-only user list"""

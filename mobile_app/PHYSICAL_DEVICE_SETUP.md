@@ -126,13 +126,12 @@ The Django backend already has CORS configured to allow all origins in developme
 
 Once the app is running on your device:
 
-- [ ] Login with demo credentials (`citizen1` / `password123`)
-- [ ] Navigate through all tabs (Dashboard, Healthcare, Agriculture, City Services)
-- [ ] Pull to refresh on each tab
+- [x] Login with demo credentials (`citizen1` / `password123`)
+- [x] Navigate through all tabs (Dashboard, Healthcare, Agriculture, City Services)
+- [x] Pull to refresh on each tab
 - [ ] Test notifications (if enabled)
-- [ ] Logout and login again
-- [ ] Try registration flow
-- [ ] Test with different user roles
+- [x] Logout and login again
+- [x] Try registration flow
 
 ## Network Configuration Summary
 
@@ -180,9 +179,6 @@ adb devices
 ## Demo Credentials
 
 - **Citizen**: `citizen1` / `password123`
-- **Doctor**: `doctor1` / `password123`
-- **City Staff**: `citystaff1` / `password123`
-- **Agri Officer**: `agriofficer1` / `password123`
 
 ---
 

@@ -1,17 +1,14 @@
-# DPI Mobile App
+# DPI Citizen Terminal
 
-Flutter mobile application for the Digital Public Infrastructure platform.
+Dedicated Flutter mobile application for citizens to access the Digital Public Infrastructure platform.
 
 ## Features
 
-- **Multi-role Authentication**: Login and registration for Citizens, Doctors, City Staff, and Agri Officers.
-- **Unified Citizen Portal**: One-stop access to Healthcare, Agriculture, and City Services.
-- **Healthcare**: Book appointments, view medical records, and track health history.
-- **Agriculture**: Access farming advisories, pest alerts, and market updates.
-- **City Services**: Report civic issues with locations and track resolution progress.
-- **Real-time Stats**: Admin-level visibility into system usage and service health.
-- **Offline Support**: Secure token caching for seamless access.
-- **Modern UI**: Clean, responsive interface built with Flutter.
+- **Personalized Dashboard**: Real-time view of service status and quick access to essential utilities.
+- **Biometric Identity**: Secure face-recognition login with automated token refresh.
+- **Healthcare Hub**: Effortless appointment booking and access to professional digital prescriptions.
+- **Agricultural Advisory**: Direct access to crop yields, expert advice, and market data.
+- **Civic Resolution**: Report city grievances with location tracking and monitor resolution status.
 
 ## Prerequisites
 
@@ -62,10 +59,7 @@ mobile_app/
 │   └── screens/
 │       ├── login_screen.dart     # Authentication portal
 │       ├── register_screen.dart  # User onboarding
-│       ├── citizen_home.dart     # Main dashboard for citizens
-│       ├── doctor_dashboard.dart # Specialized doctor view
-│       ├── city_staff_dashboard.dart # City staff management view
-│       └── agri_officer_dashboard.dart # Agri officer advisory view
+│       └── citizen_home.dart     # Main terminal for citizens
 ├── android/                      # Native Android configuration
 ├── ios/                          # Native iOS configuration
 └── pubspec.yaml                  # Flutter dependencies
@@ -74,9 +68,6 @@ mobile_app/
 ## Demo Credentials
 
 - **Citizen**: `citizen1` / `password123`
-- **Doctor**: `doctor1` / `password123`
-- **City Staff**: `citystaff1` / `password123`
-- **Agricultural Officer**: `agriofficer1` / `password123`
 
 ## API Integration
 

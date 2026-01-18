@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/auth_service.dart';
 import 'dart:io';
+import 'otp_verification_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -96,16 +97,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (result['success']) {
       setState(() {
-        if (result['requires_approval']) {
-          _successMessage = 'Deployment successful! Your account is pending administrative approval.';
-        } else {
-          _successMessage = 'Registration successful! Synchronizing with login terminal...';
-        }
+        _successMessage = 'Registration successful! Verification code sent to your email.';
       });
       
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
-          Navigator.of(context).pushReplacementNamed('/login');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OtpVerificationScreen(
+                username: _usernameController.text.trim(),
+                purpose: 'registration',
+              ),
+            ),
+          );
         }
       });
     } else {
