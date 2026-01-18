@@ -76,7 +76,12 @@ async function apiCall(endpoint, method = 'GET', data = null, requireAuth = fals
             if (typeof result === 'object' && !result.message && !result.detail) {
                 const errors = [];
                 for (const [key, value] of Object.entries(result)) {
-                    errors.push(`${key}: ${Array.isArray(value) ? value.join(', ') : value}`);
+                    const message = Array.isArray(value) ? value.join(', ') : value;
+                    if (key === 'non_field_errors') {
+                        errors.push(message);
+                    } else {
+                        errors.push(`${key}: ${message}`);
+                    }
                 }
                 if (errors.length > 0) {
                     errorMsg = errors.join(' | ');

@@ -21,11 +21,37 @@ class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['patient', 'created_at', 'updated_at']
 
     def get_medical_record_id(self, obj):
         record = obj.medical_record.last()
         return record.id if record else None
+
+    def validate(self, data):
+        doctor = data.get('doctor')
+        appointment_date = data.get('appointment_date')
+        appointment_time = data.get('appointment_time')
+        
+        # Check if doctor is unavailable
+        if doctor and appointment_date:
+            unavailability_qs = DoctorUnavailability.objects.filter(
+                doctor=doctor,
+                start_date__lte=appointment_date,
+                end_date__gte=appointment_date
+            )
+            
+            for period in unavailability_qs:
+                # If it's a full day unavailability or no specific time range is set
+                if not period.start_time or not period.end_time:
+                    raise serializers.ValidationError("Doctor is unavailable at this time")
+                
+                # Check for time overlap if time is provided
+                if appointment_time:
+                    # Simple check: is the appointment time within the blocked window?
+                    if period.start_time <= appointment_time <= period.end_time:
+                        raise serializers.ValidationError("Doctor is unavailable at this time")
+        
+        return data
 
 class PrescriptionSerializer(serializers.ModelSerializer):
     class Meta:

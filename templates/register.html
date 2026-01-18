@@ -263,12 +263,39 @@
                     </div>
                     <div class="form-group">
                         <label>Platform Role</label>
-                        <select id="role" required>
+                        <select id="role" required onchange="toggleDoctorFields()">
                             <option value="citizen">Citizen</option>
                             <option value="doctor">Doctor (Requires Approval)</option>
                             <option value="city_staff">City Staff (Requires Approval)</option>
                             <option value="agri_officer">Agricultural Officer (Requires Approval)</option>
                         </select>
+                    </div>
+                </div>
+
+                <!-- Doctor Specific Fields -->
+                <div id="doctor-fields" class="grid grid-2"
+                    style="display: none; background: #f0fdf4; padding: 1.5rem; border-radius: 4px; border: 1px dashed var(--civic-green); margin-bottom: 2rem;">
+                    <div class="form-group" style="grid-column: 1 / -1; margin-bottom: 0;">
+                        <label style="color: var(--civic-green);">Doctor Registration Details</label>
+                    </div>
+                    <div class="form-group">
+                        <label>Specialization</label>
+                        <select id="specialization">
+                            <option value="">Select Specialization</option>
+                            <option value="General Medicine">General Medicine</option>
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="Dermatology">Dermatology</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="Orthopedics">Orthopedics</option>
+                            <option value="Neurology">Neurology</option>
+                            <option value="Gynecology">Gynecology</option>
+                            <option value="Dentist">Dentist</option>
+                            <option value="ENT">ENT</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Consultation Fee (₹)</label>
+                        <input type="number" id="consultation_fee" placeholder="e.g. 500" min="0">
                     </div>
                 </div>
 
@@ -298,18 +325,7 @@
 
                 <button type="submit" class="btn-ultra">Initialize Registration</button>
 
-                <div style="text-align: center; margin: 1.5rem 0; position: relative;">
-                    <hr style="border: 0; border-top: 1px solid #e2e8f0;">
-                    <span
-                        style="position: absolute; top: -0.8rem; left: 50%; transform: translateX(-50%); background: white; padding: 0 1rem; color: #94a3b8; font-size: 0.9rem; font-weight: 600;">OR</span>
-                </div>
-
-                <a href="{% url 'social:begin' 'auth0' %}" class="btn-ultra"
-                    style="background: white; color: #0f172a; border: 1px solid #e2e8f0; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0;">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"
-                        style="width: 24px; height: 24px;">
-                    Sign up with Google
-                </a>
+                <!-- ... -->
             </form>
 
             <div class="register-footer">
@@ -323,6 +339,25 @@
 
     <script src="{% static 'js/main.js' %}"></script>
     <script>
+        function toggleDoctorFields() {
+            const role = document.getElementById('role').value;
+            const docFields = document.getElementById('doctor-fields');
+            const specInput = document.getElementById('specialization');
+            const feeInput = document.getElementById('consultation_fee');
+
+            if (role === 'doctor') {
+                docFields.style.display = 'grid';
+                specInput.required = true;
+                feeInput.required = true;
+            } else {
+                docFields.style.display = 'none';
+                specInput.required = false;
+                feeInput.required = false;
+                specInput.value = '';
+                feeInput.value = '';
+            }
+        }
+
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -346,7 +381,15 @@
             formData.append('first_name', document.getElementById('first_name').value);
             formData.append('last_name', document.getElementById('last_name').value);
             formData.append('phone_number', document.getElementById('phone_number').value);
-            formData.append('role', document.getElementById('role').value);
+
+            const role = document.getElementById('role').value;
+            formData.append('role', role);
+
+            if (role === 'doctor') {
+                formData.append('specialization', document.getElementById('specialization').value);
+                formData.append('consultation_fee', document.getElementById('consultation_fee').value);
+            }
+
             formData.append('address', document.getElementById('address').value);
             formData.append('password', password);
             formData.append('password_confirm', password_confirm);
@@ -373,6 +416,7 @@
                         successDiv.textContent = 'Deployment successful! Your account is pending administrative approval. You will receive notification upon clearance.';
                         successDiv.style.display = 'block';
                         document.getElementById('register-form').reset();
+                        toggleDoctorFields(); // Reset logic
                         setTimeout(() => {
                             window.location.href = '/login/';
                         }, 4000);

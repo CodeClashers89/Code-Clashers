@@ -25,29 +25,43 @@ class CustomUserSerializer(serializers.ModelSerializer):
                   'phone_number', 'address', 'is_approved', 'created_at', 'profile']
         read_only_fields = ['id', 'created_at', 'is_approved']
 
+from healthcare.models import Doctor
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
     password_confirm = serializers.CharField(write_only=True)
     face_image = serializers.ImageField(write_only=True, required=False)
     
+    # Doctor specific fields
+    specialization = serializers.CharField(write_only=True, required=False)
+    consultation_fee = serializers.DecimalField(write_only=True, required=False, max_digits=10, decimal_places=2)
+    
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 
-                  'last_name', 'role', 'phone_number', 'address', 'face_image']
+                  'last_name', 'role', 'phone_number', 'address', 'face_image',
+                  'specialization', 'consultation_fee']
     
     def validate(self, data):
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError("Passwords do not match")
+        
+        if data.get('role') == 'doctor':
+            if not data.get('specialization'):
+                raise serializers.ValidationError({"specialization": "Specialization is required for doctors."})
+            if not data.get('consultation_fee'):
+                raise serializers.ValidationError({"consultation_fee": "Consultation fee is required for doctors."})
+                
         return data
     
     def create(self, validated_data):
         validated_data.pop('password_confirm')
         password = validated_data.pop('password')
         
-        # Extract face_image if present (do not pass to create_user)
-        face_image = None
-        if 'face_image' in validated_data:
-            face_image = validated_data.pop('face_image')
+        # Extract extra fields
+        face_image = validated_data.pop('face_image', None)
+        specialization = validated_data.pop('specialization', 'General')
+        consultation_fee = validated_data.pop('consultation_fee', 500.00)
         
         # Auto-approve citizens, others need approval
         if validated_data['role'] == 'citizen':
@@ -60,27 +74,34 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         
         # Handle face registration if image provided
         if face_image:
-            # Reset file pointer
             face_image.seek(0)
-            
-            # Register with Face++
             result = face_service.register_face(face_image, user.username)
-            
             if 'face_token' in result:
                 profile.face_token = result['face_token']
-                # Save the image as avatar
                 face_image.seek(0)
                 profile.avatar = face_image
                 profile.save()
-            elif 'error' in result:
-                # Log error but don't fail registration? Or fail?
-                # For now, let's proceed but maybe log it.
-                # Ideally we should raise ValidationError if face is required.
-                # But requirement says "they have to also upload".
-                pass
         
-        # Create approval request for service providers
-        if user.role in ['doctor', 'city_staff', 'agri_officer']:
+        # Create specific profiles based on role
+        if user.role == 'doctor':
+            # Create Doctor profile immediately
+            # Generate a temporary license number
+            import uuid
+            temp_license = f"TMP-{uuid.uuid4().hex[:8].upper()}"
+            
+            Doctor.objects.create(
+                user=user,
+                specialization=specialization,
+                consultation_fee=consultation_fee,
+                qualification='Pending Verification', # Default
+                license_number=temp_license,
+                is_available=True
+            )
+            
+            # Also create approval request
+            ApprovalRequest.objects.create(user=user, request_type='doctor')
+            
+        elif user.role in ['city_staff', 'agri_officer']:
             ApprovalRequest.objects.create(
                 user=user,
                 request_type=user.role
