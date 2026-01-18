@@ -159,8 +159,17 @@ async function cancelAppointment(appointmentId) {
 
     try {
         showLoading();
-        await apiCall(`/healthcare/appointments/${appointmentId}/`, 'DELETE', null, true);
-        showNotification('Appointment cancelled successfully', 'success');
+        try {
+            await apiCall(`/healthcare/appointments/${appointmentId}/`, 'DELETE', null, true);
+            showNotification('Appointment cancelled successfully', 'success');
+        } catch (error) {
+            // If it's a 404, it means it's already deleted/doesn't exist. Treat as success.
+            if (error.message && error.message.includes('No Appointment matches') || error.message.includes('Not found')) {
+                showNotification('Appointment cancelled successfully', 'success');
+            } else {
+                throw error;
+            }
+        }
         await loadAppointments();
         updateActivityCounts();
     } catch (error) {

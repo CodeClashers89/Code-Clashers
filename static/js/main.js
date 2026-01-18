@@ -62,6 +62,11 @@ async function apiCall(endpoint, method = 'GET', data = null, requireAuth = fals
             return;
         }
 
+        // Handle 204 No Content (common for DELETE)
+        if (response.status === 204) {
+            return null;
+        }
+
         const result = await response.json();
 
         if (!response.ok) {

@@ -59,6 +59,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
+        print(f"DEBUG: AppointmentViewSet.get_queryset - User: {user}, Role: {getattr(user, 'role', 'None')}, Auth: {user.is_authenticated}")
         if not user.is_authenticated:
             return Appointment.objects.all()
         if user.role == 'doctor':
