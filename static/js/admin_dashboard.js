@@ -39,9 +39,11 @@ async function loadAdminStats() {
         // Update stats cards
         const totalUsersEl = document.getElementById('admin-total-users');
         const pendingApprovalsEl = document.getElementById('admin-pending-approvals');
+        const activeServicesEl = document.getElementById('admin-active-services');
 
         if (totalUsersEl) totalUsersEl.textContent = stats.total_users.toLocaleString();
         if (pendingApprovalsEl) pendingApprovalsEl.textContent = stats.pending_approvals;
+        if (activeServicesEl) activeServicesEl.textContent = stats.active_services || 3;
 
         // Use live totals for Requests too if available
         const totalRequestsEl = document.querySelector('.stat-card.danger .stat-value');
