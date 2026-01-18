@@ -81,44 +81,10 @@ class _LandingScreenState extends State<LandingScreen> with SingleTickerProvider
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Stack(
-            children: [
-              Text(
-                'SEVA SETU',
-                style: GoogleFonts.outfit(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 8,
-                  color: Colors.grey.shade100,
-                ),
-              ),
-              AnimatedBuilder(
-                animation: _scanAnimation,
-                builder: (context, child) {
-                  return ClipRect(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: _scanAnimation.value,
-                      child: Text(
-                        'SEVA SETU',
-                        style: GoogleFonts.outfit(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 8,
-                          color: const Color(0xFF1E8449),
-                          shadows: [
-                            Shadow(
-                              color: const Color(0xFF1E8449).withOpacity(0.5),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
+          Image.asset(
+            'assets/images/logo.png',
+            height: 180,
+            fit: BoxFit.contain,
           ),
           const SizedBox(height: 24),
           Text(
@@ -142,6 +108,14 @@ class _LandingScreenState extends State<LandingScreen> with SingleTickerProvider
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Hero(
+              tag: 'app_logo',
+              child: Image.asset(
+                'assets/images/logo.png',
+                height: 80,
+              ),
+            ),
+            const SizedBox(height: 24),
             _buildBadge('GOVERNMENT OF INDIA'),
             const SizedBox(height: 16),
             Text(

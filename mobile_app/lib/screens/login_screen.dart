@@ -67,7 +67,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (result['success']) {
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/${result['role']}');
+      String role = result['role'].toString().replaceAll('_', '-');
+      Navigator.of(context).pushReplacementNamed('/$role');
     } else {
       setState(() => _errorMessage = result['error']);
     }
@@ -92,6 +93,14 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Hero(
+                    tag: 'app_logo',
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      height: 100,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
                   Text(
                     'AUTHENTICATION',
                     style: GoogleFonts.outfit(

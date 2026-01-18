@@ -209,8 +209,8 @@ LOGOUT_URL = 'logout'
 LOGOUT_REDIRECT_URL = 'login'
 
 # Face++ API Credentials
-FACEPP_API_KEY = 'auD3kLcZ0Zx8j7O8w9EbIRFb2LnnEolv'
-FACEPP_API_SECRET = 'qAS2J5D05RCrMiePco79X_j4uSkS7Mqq'
+FACEPP_API_KEY = 'KtGZPcOdHRJgE8_GtcIwR8EuTTr5sS2S'
+FACEPP_API_SECRET = 'q_j45mmmE6rqBEiGgzCHvaf9SjSvoltQ'
 FACEPP_API_URL = 'https://api-us.faceplusplus.com/facepp/v3'
 
 # OpenAI Configuration

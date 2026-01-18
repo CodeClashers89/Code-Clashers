@@ -131,6 +131,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Hero(
+                tag: 'app_logo',
+                child: Image.asset('assets/images/logo.png', height: 60),
+              ),
+              const SizedBox(height: 24),
               Text(
                 'ESTABLISH.IDENTITY',
                 style: GoogleFonts.outfit(
