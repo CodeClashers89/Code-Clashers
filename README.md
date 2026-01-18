@@ -18,6 +18,11 @@ The Seva Setu platform leverages state-of-the-art AI and ML to empower citizens:
 - **Smart Agriculture**: Data-driven crop recommendation engine and yield level predictors based on soil type, rainfall, and location.
 - **Intelligent City Services**: Integrated **OpenAI GPT-4o-mini** to automatically analyze and prioritize municipal complaints based on public safety impact and urgency.
 
+## Email Otp System
+- Helps in case of forgotted password.
+- Gets email for approval of roles like doctors, city staff, agricultural officers.
+- Veriffication through email otp for first time registraion.
+
 ## Tech Stack
 ### Backend
 - **Framework**: Django 5.1
