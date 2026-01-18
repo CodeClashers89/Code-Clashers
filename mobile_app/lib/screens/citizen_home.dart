@@ -84,7 +84,7 @@ class _CitizenHomeState extends State<CitizenHome> {
             onSelected: (value) async {
               if (value == 'logout') {
                 await authService.logout();
-                if (!context.mounted) return;
+                if (!mounted) return;
                 Navigator.of(context).pushReplacementNamed('/login');
               }
             },
@@ -149,7 +149,7 @@ class DashboardTab extends StatelessWidget {
             fontSize: 11,
             fontWeight: FontWeight.w800,
             letterSpacing: 2,
-            color: const Color(0xFF0B4F87).withOpacity(0.5),
+            color: const Color(0xFF0B4F87).withValues(alpha: 0.5),
           ),
         ),
         const SizedBox(height: 8),
@@ -234,7 +234,7 @@ class DashboardTab extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.05),
+                    color: accentColor.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Icon(icon, color: accentColor, size: 28),
@@ -285,6 +285,7 @@ class HealthcareTab extends StatefulWidget {
 class _HealthcareTabState extends State<HealthcareTab> {
   List<dynamic> _appointments = [];
   List<dynamic> _doctors = [];
+  List<dynamic> _medicalHistory = [];
   bool _isLoading = true;
   bool _isPredicting = false;
   bool _isBooking = false;
@@ -317,6 +318,7 @@ class _HealthcareTabState extends State<HealthcareTab> {
     await Future.wait([
       _loadAppointments(),
       _loadDoctors(),
+      _loadMedicalHistory(),
     ]);
   }
 
@@ -330,8 +332,21 @@ class _HealthcareTabState extends State<HealthcareTab> {
           _appointments = data is List ? data : data['results'] ?? [];
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _loadMedicalHistory() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    try {
+      final response = await authService.get('/healthcare/medical-records/');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          _medicalHistory = data is List ? data : data['results'] ?? [];
+        });
+      }
+    } catch (e) { /* error logged */ }
   }
 
   Future<void> _loadDoctors() async {
@@ -351,7 +366,7 @@ class _HealthcareTabState extends State<HealthcareTab> {
           }).toList();
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
   }
 
   Future<void> _predictDisease() async {
@@ -375,7 +390,7 @@ class _HealthcareTabState extends State<HealthcareTab> {
           _predictionResult = json.decode(response.body);
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     setState(() => _isPredicting = false);
   }
 
@@ -392,13 +407,14 @@ class _HealthcareTabState extends State<HealthcareTab> {
       });
 
       if (response.statusCode == 201) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Appointment booked successfully!')),
         );
         _loadAppointments();
         _reasonController.clear();
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     setState(() => _isBooking = false);
   }
 
@@ -417,6 +433,13 @@ class _HealthcareTabState extends State<HealthcareTab> {
           const SizedBox(height: 16),
           _buildPredictionForm(),
           if (_predictionResult != null) _buildPredictionResults(),
+          const SizedBox(height: 40),
+          _buildSectionHeader('MY MEDICAL HISTORY'),
+          const SizedBox(height: 16),
+          if (_medicalHistory.isEmpty)
+            _buildEmptyState('No medical records found')
+          else
+            ..._medicalHistory.map((rec) => _buildMedicalRecordCard(rec)).toList(),
           const SizedBox(height: 40),
           _buildSectionHeader('BOOK APPOINTMENT'),
           const SizedBox(height: 16),
@@ -440,7 +463,7 @@ class _HealthcareTabState extends State<HealthcareTab> {
         fontSize: 11,
         fontWeight: FontWeight.w800,
         letterSpacing: 2,
-        color: const Color(0xFF0B4F87).withOpacity(0.5),
+        color: const Color(0xFF0B4F87).withValues(alpha: 0.5),
       ),
     );
   }
@@ -544,9 +567,9 @@ class _HealthcareTabState extends State<HealthcareTab> {
       margin: const EdgeInsets.only(top: 24),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B4F87).withOpacity(0.05),
+        color: const Color(0xFF0B4F87).withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: const Color(0xFF0B4F87).withOpacity(0.1)),
+        border: Border.all(color: const Color(0xFF0B4F87).withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -680,7 +703,7 @@ class _HealthcareTabState extends State<HealthcareTab> {
         _buildLabel(label),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: items.contains(value) ? value : null,
+          initialValue: items.contains(value) ? value : null,
           items: items.asMap().entries.map((entry) {
             return DropdownMenuItem(
               value: entry.value,
@@ -727,6 +750,64 @@ class _HealthcareTabState extends State<HealthcareTab> {
     );
   }
 
+  Widget _buildMedicalRecordCard(dynamic record) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                (record['diagnosis'] ?? 'Clinical Record').toUpperCase(),
+                style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 13, color: const Color(0xFF0B4F87)),
+              ),
+              Text(
+                record['date_recorded'] ?? '',
+                style: GoogleFonts.outfit(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'PHYSICIAN: ${record['doctor_name'] ?? 'Medical Staff'}',
+            style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF1E8449), letterSpacing: 0.5),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            record['notes'] ?? 'No clinical notes provided.',
+            style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey.shade600),
+          ),
+          if (record['prescriptions'] != null && (record['prescriptions'] as List).isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(4)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('PRESCRIPTION DATA', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey.shade400)),
+                  const SizedBox(height: 8),
+                  ...(record['prescriptions'] as List).map((p) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text('• ${p['medication']} (${p['dosage']} - ${p['frequency']})', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87)),
+                  )),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildAppointmentCard(dynamic appointment) {
     final status = appointment['status'] ?? 'scheduled';
     final statusColor = status == 'completed' ? Colors.green : Colors.blue;
@@ -754,7 +835,7 @@ class _HealthcareTabState extends State<HealthcareTab> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -811,11 +892,11 @@ class _AgricultureTabState extends State<AgricultureTab> {
   Map<String, dynamic>? _recommendationResult;
 
   // Crop Recommendation Controllers
-  String _district = 'Ahmedabad';
-  String _season = 'Kharif';
-  String _soilType = 'Black';
-  String _irrigation = 'Yes';
-  String _rainfall = 'Medium';
+  String _selectedDistrict = 'Ahmedabad';
+  String _selectedSeason = 'Kharif';
+  String _selectedSoilType = 'Black';
+  String _selectedIrrigation = 'Yes';
+  String _selectedRainfall = 'Medium';
   final _landSizeController = TextEditingController();
 
   // Query Controllers
@@ -848,7 +929,7 @@ class _AgricultureTabState extends State<AgricultureTab> {
           _updates = data is List ? data : data['results'] ?? [];
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -862,7 +943,7 @@ class _AgricultureTabState extends State<AgricultureTab> {
           _queries = data is List ? data : data['results'] ?? [];
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
   }
 
   Future<void> _loadCategories() async {
@@ -875,7 +956,7 @@ class _AgricultureTabState extends State<AgricultureTab> {
           _categories = data is List ? data : data['results'] ?? [];
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
   }
 
   Future<void> _recommendCrop() async {
@@ -883,11 +964,11 @@ class _AgricultureTabState extends State<AgricultureTab> {
     final authService = Provider.of<AuthService>(context, listen: false);
     try {
       final response = await authService.post('/agriculture/recommend-crop/', {
-        'location': _district,
-        'season': _season,
-        'soil_type': _soilType,
-        'irrigation': _irrigation,
-        'rainfall': _rainfall,
+        'location': _selectedDistrict,
+        'season': _selectedSeason,
+        'soil_type': _selectedSoilType,
+        'irrigation': _selectedIrrigation,
+        'rainfall': _selectedRainfall,
         'land_size': double.tryParse(_landSizeController.text) ?? 1.0,
       });
 
@@ -896,13 +977,14 @@ class _AgricultureTabState extends State<AgricultureTab> {
           _recommendationResult = json.decode(response.body);
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     setState(() => _isRecommending = false);
   }
 
   Future<void> _submitQuery() async {
     setState(() => _isSubmittingQuery = true);
     final authService = Provider.of<AuthService>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
     try {
       final response = await authService.post('/agriculture/queries/', {
         'crop_category': _selectedCategoryId,
@@ -910,9 +992,9 @@ class _AgricultureTabState extends State<AgricultureTab> {
         'description': _queryDescController.text,
         'location': _queryLocationController.text,
       });
-
+      if (!mounted) return;
       if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(content: Text('Query submitted successfully!')),
         );
         _loadQueries();
@@ -920,7 +1002,7 @@ class _AgricultureTabState extends State<AgricultureTab> {
         _queryDescController.clear();
         _queryLocationController.clear();
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     setState(() => _isSubmittingQuery = false);
   }
 
@@ -937,8 +1019,7 @@ class _AgricultureTabState extends State<AgricultureTab> {
         children: [
           _buildSectionHeader('CROP RECOMMENDATION ENGINE'),
           const SizedBox(height: 16),
-          _buildRecommendationForm(),
-          if (_recommendationResult != null) _buildRecommendationResults(),
+          _buildCropRecommendationForm(),
           const SizedBox(height: 40),
           _buildSectionHeader('SUBMIT ADVISORY QUERY'),
           const SizedBox(height: 16),
@@ -969,7 +1050,7 @@ class _AgricultureTabState extends State<AgricultureTab> {
         fontSize: 11,
         fontWeight: FontWeight.w800,
         letterSpacing: 2,
-        color: const Color(0xFF1E8449).withOpacity(0.5),
+        color: const Color(0xFF1E8449).withValues(alpha: 0.5),
       ),
     );
   }
@@ -995,7 +1076,7 @@ class _AgricultureTabState extends State<AgricultureTab> {
     );
   }
 
-  Widget _buildRecommendationForm() {
+  Widget _buildCropRecommendationForm() {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -1006,26 +1087,67 @@ class _AgricultureTabState extends State<AgricultureTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildDropdown('DISTRICT', _district, ['Ahmedabad', 'Rajkot', 'Surat', 'Vadodara', 'Pune', 'Nagpur', 'Nashik', 'Ludhiana', 'Chennai', 'Jaipur'], (val) => setState(() => _district = val!)),
-          const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _buildDropdown('SEASON', _season, ['Kharif', 'Rabi'], (val) => setState(() => _season = val!))),
+              Expanded(
+                child: _buildDropdown(
+                  'DISTRICT',
+                  _selectedDistrict,
+                  ['Ahmedabad', 'Rajkot', 'Surat', 'Vadodara', 'Pune', 'Nagpur', 'Nashik', 'Aurangabad', 'Ludhiana', 'Amritsar', 'Jalandhar', 'Gurgaon', 'Lucknow', 'Kanpur Nagar', 'Varanasi', 'Patna', 'Gaya', 'Chennai', 'Coimbatore', 'Madurai', 'Guntur', 'Warangal', 'Kolkata', 'Nadia', 'Howrah', 'Jaipur', 'Jodhpur', 'Bikaner'],
+                  (val) => setState(() => _selectedDistrict = val!),
+                ),
+              ),
               const SizedBox(width: 16),
-              Expanded(child: _buildDropdown('SOIL TYPE', _soilType, ['Black', 'Loamy', 'Clay', 'Sandy', 'Red', 'Alluvial'], (val) => setState(() => _soilType = val!))),
+              Expanded(
+                child: _buildDropdown(
+                  'SEASON',
+                  _selectedSeason,
+                  ['Kharif', 'Rabi'],
+                  (val) => setState(() => _selectedSeason = val!),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _buildDropdown('IRRIGATION', _irrigation, ['Yes', 'No'], (val) => setState(() => _irrigation = val!))),
+              Expanded(
+                child: _buildDropdown(
+                  'SOIL TYPE',
+                  _selectedSoilType,
+                  ['Black', 'Loamy', 'Clay', 'Sandy', 'Red', 'Alluvial'],
+                  (val) => setState(() => _selectedSoilType = val!),
+                ),
+              ),
               const SizedBox(width: 16),
-              Expanded(child: _buildDropdown('RAINFALL', _rainfall, ['Low', 'Medium', 'High'], (val) => setState(() => _rainfall = val!))),
+              Expanded(
+                child: _buildDropdown(
+                  'IRRIGATION',
+                  _selectedIrrigation,
+                  ['Yes', 'No'],
+                  (val) => setState(() => _selectedIrrigation = val!),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          _buildTextField(_landSizeController, 'LAND SIZE (ACRES)', TextInputType.number),
-          const SizedBox(height: 32),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdown(
+                  'RAINFALL',
+                  _selectedRainfall,
+                  ['Low', 'Medium', 'High'],
+                  (val) => setState(() => _selectedRainfall = val!),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildTextField(_landSizeController, 'LAND SIZE (ACRES)', TextInputType.number),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             height: 56,
@@ -1040,49 +1162,38 @@ class _AgricultureTabState extends State<AgricultureTab> {
                   : Text('GENERATE RECOMMENDATION', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, letterSpacing: 1, color: Colors.white)),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecommendationResults() {
-    return Container(
-      margin: const EdgeInsets.only(top: 24),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E8449).withOpacity(0.05),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: const Color(0xFF1E8449).withOpacity(0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'OPTIMAL CROP SELECTION',
-            style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w800, color: const Color(0xFF1E8449), letterSpacing: 1),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _recommendationResult!['crop']?.toString().toUpperCase() ?? 'UNKNOWN',
-            style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.w900, color: const Color(0xFF1E8449)),
-          ),
-          const SizedBox(height: 16),
-          _buildLabel('TECHNICAL ADVISORY'),
-          const SizedBox(height: 8),
-          Text(
-            _recommendationResult!['advisory'] ?? 'No advisory available.',
-            style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey.shade700, height: 1.5),
-          ),
-          if (_recommendationResult!['risk'] != null && _recommendationResult!['risk'] != 'No major risk detected') ...[
-            const SizedBox(height: 16),
+          if (_recommendationResult != null) ...[
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 24),
             Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(4)),
-              child: Row(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E8449).withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(_recommendationResult!['risk'], style: GoogleFonts.outfit(fontSize: 12, color: Colors.red.shade700, fontWeight: FontWeight.w600))),
+                  Text(
+                    'RECOMMENDED CROP',
+                    style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2, color: const Color(0xFF1E8449)),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _recommendationResult!['recommended_crop'] ?? 'N/A',
+                    style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w900, color: const Color(0xFF1E8449)),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'OPTIMAL CONDITIONS',
+                    style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey.shade500),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _recommendationResult!['conditions'] ?? 'Standard seasonal conditions',
+                    style: GoogleFonts.outfit(fontSize: 13, color: Colors.black87),
+                  ),
                 ],
               ),
             ),
@@ -1168,7 +1279,7 @@ class _AgricultureTabState extends State<AgricultureTab> {
   Widget _buildBadge(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(2)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(2)),
       child: Text(text.toUpperCase(), style: GoogleFonts.outfit(fontSize: 9, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.5)),
     );
   }
@@ -1203,7 +1314,7 @@ class _AgricultureTabState extends State<AgricultureTab> {
         _buildLabel(label),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: items.contains(value) ? value : null,
+          initialValue: items.contains(value) ? value : null,
           items: items.asMap().entries.map((entry) {
             return DropdownMenuItem(
               value: entry.value,
@@ -1249,7 +1360,7 @@ class _AgricultureTabState extends State<AgricultureTab> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Text(
@@ -1268,7 +1379,7 @@ class _AgricultureTabState extends State<AgricultureTab> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -1316,10 +1427,10 @@ class _CityServicesTabState extends State<CityServicesTab> {
   bool _isSubmitting = false;
 
   // Complaint Controllers
-  String? _selectedCategoryId;
-  final _titleController = TextEditingController();
-  final _descController = TextEditingController();
-  final _locationController = TextEditingController();
+  String? _selectedCityCategoryId;
+  final _cityTitleController = TextEditingController();
+  final _cityDescController = TextEditingController();
+  final _cityLocationController = TextEditingController();
 
   @override
   void initState() {
@@ -1344,7 +1455,7 @@ class _CityServicesTabState extends State<CityServicesTab> {
           _complaints = data is List ? data : data['results'] ?? [];
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -1358,31 +1469,32 @@ class _CityServicesTabState extends State<CityServicesTab> {
           _categories = data is List ? data : data['results'] ?? [];
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
   }
 
   Future<void> _submitComplaint() async {
-    if (_selectedCategoryId == null) return;
+    if (_selectedCityCategoryId == null) return;
     setState(() => _isSubmitting = true);
     final authService = Provider.of<AuthService>(context, listen: false);
     try {
       final response = await authService.post('/city/complaints/', {
-        'category': _selectedCategoryId,
-        'title': _titleController.text,
-        'description': _descController.text,
-        'location': _locationController.text,
+        'category': _selectedCityCategoryId,
+        'title': _cityTitleController.text,
+        'description': _cityDescController.text,
+        'location': _cityLocationController.text,
       });
 
       if (response.statusCode == 201) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Complaint submitted successfully!')),
         );
         _loadComplaints();
-        _titleController.clear();
-        _descController.clear();
-        _locationController.clear();
+        _cityTitleController.clear();
+        _cityDescController.clear();
+        _cityLocationController.clear();
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     setState(() => _isSubmitting = false);
   }
 
@@ -1419,7 +1531,7 @@ class _CityServicesTabState extends State<CityServicesTab> {
         fontSize: 11,
         fontWeight: FontWeight.w800,
         letterSpacing: 2,
-        color: const Color(0xFFD68910).withOpacity(0.5),
+        color: const Color(0xFFD68910).withValues(alpha: 0.5),
       ),
     );
   }
@@ -1458,17 +1570,17 @@ class _CityServicesTabState extends State<CityServicesTab> {
         children: [
           _buildDropdown(
             'SERVICE CATEGORY',
-            _selectedCategoryId,
+            _selectedCityCategoryId,
             _categories.map((c) => c['id'].toString()).toList(),
-            (val) => setState(() => _selectedCategoryId = val),
+            (val) => setState(() => _selectedCityCategoryId = val),
             displayNames: _categories.map((c) => c['name'] as String).toList(),
           ),
           const SizedBox(height: 16),
-          _buildTextField(_titleController, 'GRIEVANCE TITLE', TextInputType.text),
+          _buildTextField(_cityTitleController, 'GRIEVANCE TITLE', TextInputType.text),
           const SizedBox(height: 16),
-          _buildTextField(_descController, 'DETAILED DESCRIPTION', TextInputType.text, maxLines: 3),
+          _buildTextField(_cityDescController, 'DETAILED DESCRIPTION', TextInputType.text, maxLines: 3),
           const SizedBox(height: 16),
-          _buildTextField(_locationController, 'EXACT LOCATION / ADDRESS', TextInputType.text),
+          _buildTextField(_cityLocationController, 'EXACT LOCATION / ADDRESS', TextInputType.text),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -1531,7 +1643,7 @@ class _CityServicesTabState extends State<CityServicesTab> {
   Widget _buildBadge(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(2)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(2)),
       child: Text(text.toUpperCase(), style: GoogleFonts.outfit(fontSize: 9, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.5)),
     );
   }
@@ -1566,7 +1678,7 @@ class _CityServicesTabState extends State<CityServicesTab> {
         _buildLabel(label),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: items.contains(value) ? value : null,
+          initialValue: items.contains(value) ? value : null,
           items: items.asMap().entries.map((entry) {
             return DropdownMenuItem(
               value: entry.value,

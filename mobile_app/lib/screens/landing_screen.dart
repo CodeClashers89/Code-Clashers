@@ -11,7 +11,6 @@ class LandingScreen extends StatefulWidget {
 
 class _LandingScreenState extends State<LandingScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _scanAnimation;
   bool _showContent = false;
   bool _scanning = true;
 
@@ -21,10 +20,6 @@ class _LandingScreenState extends State<LandingScreen> with SingleTickerProvider
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
-    );
-
-    _scanAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutQuart),
     );
 
     _controller.forward().then((_) {
@@ -93,7 +88,7 @@ class _LandingScreenState extends State<LandingScreen> with SingleTickerProvider
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 4,
-              color: const Color(0xFF0B4F87).withOpacity(0.3),
+              color: const Color(0xFF0B4F87).withValues(alpha: 0.3),
             ),
           ),
         ],
@@ -180,7 +175,7 @@ class _LandingScreenState extends State<LandingScreen> with SingleTickerProvider
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E8449).withOpacity(0.1),
+        color: const Color(0xFF1E8449).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
@@ -274,7 +269,7 @@ class _LandingScreenState extends State<LandingScreen> with SingleTickerProvider
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.05),
+              color: color.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Icon(icon, color: color, size: 24),

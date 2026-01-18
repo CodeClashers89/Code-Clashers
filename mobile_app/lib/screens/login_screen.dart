@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 4,
-                      color: const Color(0xFF0B4F87).withOpacity(0.1),
+                      color: const Color(0xFF0B4F87).withValues(alpha: 0.1),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -300,7 +300,7 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.outfit(color: Colors.grey.shade400, fontWeight: FontWeight.w400),
-        prefixIcon: Icon(icon, color: const Color(0xFF0B4F87).withOpacity(0.5)),
+        prefixIcon: Icon(icon, color: const Color(0xFF0B4F87).withValues(alpha: 0.5)),
         filled: true,
         fillColor: Colors.grey.shade50,
         contentPadding: const EdgeInsets.all(20),

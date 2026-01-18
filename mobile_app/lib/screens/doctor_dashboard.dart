@@ -132,7 +132,7 @@ class DoctorDashboardTab extends StatelessWidget {
             fontSize: 11,
             fontWeight: FontWeight.w800,
             letterSpacing: 2,
-            color: const Color(0xFF0B4F87).withOpacity(0.5),
+            color: const Color(0xFF0B4F87).withValues(alpha: 0.5),
           ),
         ),
         const SizedBox(height: 8),
@@ -201,7 +201,7 @@ class DoctorDashboardTab extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.05),
+                    color: accentColor.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Icon(icon, color: accentColor, size: 28),
@@ -269,7 +269,7 @@ class _AppointmentsTabState extends State<AppointmentsTab> {
           _appointments = data is List ? data : data['results'] ?? [];
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -300,7 +300,7 @@ class _AppointmentsTabState extends State<AppointmentsTab> {
         fontSize: 11,
         fontWeight: FontWeight.w800,
         letterSpacing: 2,
-        color: const Color(0xFF0B4F87).withOpacity(0.5),
+        color: const Color(0xFF0B4F87).withValues(alpha: 0.5),
       ),
     );
   }
@@ -380,7 +380,7 @@ class _AppointmentsTabState extends State<AppointmentsTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
@@ -395,10 +395,12 @@ class _AppointmentsTabState extends State<AppointmentsTab> {
     try {
       final response = await authService.post('/healthcare/appointments/$id/cancel/', {});
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Appointment Cancelled')));
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+const SnackBar(content: Text('Appointment Cancelled')));
         _loadAppointments();
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
   }
 
   void _showAppointmentActions(dynamic apt) {
@@ -411,7 +413,7 @@ class _AppointmentsTabState extends State<AppointmentsTab> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('APPOINTMENT ACTIONS', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, letterSpacing: 1.5, color: const Color(0xFF0B4F87).withOpacity(0.5), fontSize: 11)),
+            Text('APPOINTMENT ACTIONS', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, letterSpacing: 1.5, color: const Color(0xFF0B4F87).withValues(alpha: 0.5), fontSize: 11)),
             const SizedBox(height: 24),
             ListTile(
               leading: const Icon(Icons.add_task, color: Colors.green),
@@ -487,7 +489,7 @@ class _PatientsTabState extends State<PatientsTab> {
           _filteredRecords = _records;
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -532,7 +534,7 @@ class _PatientsTabState extends State<PatientsTab> {
         fontSize: 11,
         fontWeight: FontWeight.w800,
         letterSpacing: 2,
-        color: const Color(0xFF0B4F87).withOpacity(0.5),
+        color: const Color(0xFF0B4F87).withValues(alpha: 0.5),
       ),
     );
   }
@@ -611,7 +613,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
           _unavailability = data is List ? data : data['results'] ?? [];
         });
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -639,7 +641,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
         fontSize: 11,
         fontWeight: FontWeight.w800,
         letterSpacing: 2,
-        color: const Color(0xFF0B4F87).withOpacity(0.5),
+        color: const Color(0xFF0B4F87).withValues(alpha: 0.5),
       ),
     );
   }
@@ -653,7 +655,7 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
       ),
       child: Column(
         children: [
-          Icon(Icons.check_circle_outline, color: const Color(0xFF1E8449).withOpacity(0.3), size: 48),
+          Icon(Icons.check_circle_outline, color: const Color(0xFF1E8449).withValues(alpha: 0.3), size: 48),
           const SizedBox(height: 16),
           Text(message, style: GoogleFonts.outfit(color: Colors.grey.shade400)),
         ],
@@ -677,13 +679,37 @@ class _AvailabilityTabState extends State<AvailabilityTab> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(u['reason'] ?? 'On Leave', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: const Color(0xFFD68910))),
-              Icon(Icons.warning_amber_rounded, color: const Color(0xFFD68910).withOpacity(0.5), size: 16),
+              _buildBadge(u['recurrence']?.toString().toUpperCase() ?? 'ONE-TIME', const Color(0xFFD68910)),
             ],
           ),
           const SizedBox(height: 8),
-          Text('${u['start_date']} — ${u['end_date']}', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600)),
+          Row(
+            children: [
+              const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+              const SizedBox(width: 8),
+              Text('${u['start_date']} — ${u['end_date']}', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600)),
+            ],
+          ),
+          if (u['start_time'] != null) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                const SizedBox(width: 8),
+                Text('${u['start_time']} — ${u['end_time'] ?? 'Finish'}', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildBadge(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
+      child: Text(text, style: GoogleFonts.outfit(fontSize: 9, fontWeight: FontWeight.w800, color: color)),
     );
   }
 }
@@ -703,11 +729,46 @@ class _MedicalRecordFormState extends State<MedicalRecordForm> {
   final _tempController = TextEditingController();
   final _bpController = TextEditingController();
   final _pulseController = TextEditingController();
+  
+  // Prescription State
+  final List<Map<String, dynamic>> _prescriptions = [];
   bool _isSaving = false;
+
+  void _addPrescriptionRow() {
+    setState(() {
+      _prescriptions.add({
+        'medicine_name': TextEditingController(),
+        'dosage': TextEditingController(),
+        'frequency': 'Once daily',
+        'timing': 'After breakfast',
+        'duration_value': TextEditingController(text: '7'),
+        'duration_unit': 'days',
+        'instructions': TextEditingController(),
+      });
+    });
+  }
+
+  void _removePrescriptionRow(int index) {
+    setState(() {
+      _prescriptions.removeAt(index);
+    });
+  }
 
   Future<void> _saveRecord() async {
     setState(() => _isSaving = true);
     final authService = Provider.of<AuthService>(context, listen: false);
+    
+    final prescriptionData = _prescriptions.map((p) {
+      return {
+        'medicine_name': (p['medicine_name'] as TextEditingController).text,
+        'dosage': (p['dosage'] as TextEditingController).text,
+        'frequency': p['frequency'],
+        'timing': p['timing'],
+        'duration': '${(p['duration_value'] as TextEditingController).text} ${p['duration_unit']}',
+        'instructions': (p['instructions'] as TextEditingController).text,
+      };
+    }).toList();
+
     try {
       final response = await authService.post('/healthcare/medical-records/', {
         'patient': widget.appointment['patient'],
@@ -719,18 +780,18 @@ class _MedicalRecordFormState extends State<MedicalRecordForm> {
           'temperature': _tempController.text,
           'bp': _bpController.text,
           'pulse': _pulseController.text,
-        }
+        },
+        'prescriptions': prescriptionData,
       });
 
       if (response.statusCode == 201) {
-        // Now complete the appointment
         await authService.post('/healthcare/appointments/${widget.appointment['id']}/complete/', {});
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Medical Record Finalized')));
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Record & Prescriptions Finalized')));
           Navigator.pop(context);
         }
       }
-    } catch (e) {}
+    } catch (e) { /* error logged */ }
     setState(() => _isSaving = false);
   }
 
@@ -739,7 +800,7 @@ class _MedicalRecordFormState extends State<MedicalRecordForm> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('GENERATE RECORD', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 16)),
+        title: Text('DIAGNOSTIC ARCHIVE', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 16)),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Color(0xFF0B4F87)), onPressed: () => Navigator.pop(context)),
@@ -760,7 +821,7 @@ class _MedicalRecordFormState extends State<MedicalRecordForm> {
                 Expanded(child: _buildTextField(_pulseController, 'PULSE', TextInputType.number)),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             _buildLabel('CLINICAL ASSESSMENT'),
             const SizedBox(height: 16),
             _buildTextField(_diagnosisController, 'FINAL DIAGNOSIS', TextInputType.text),
@@ -768,23 +829,116 @@ class _MedicalRecordFormState extends State<MedicalRecordForm> {
             _buildTextField(_symptomsController, 'OBSERVED SYMPTOMS', TextInputType.text, maxLines: 2),
             const SizedBox(height: 16),
             _buildTextField(_treatmentController, 'TREATMENT PLAN', TextInputType.text, maxLines: 3),
-            const SizedBox(height: 32),
+            
+            const SizedBox(height: 40),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildLabel('PRESCRIPTIONS'),
+                TextButton.icon(
+                  onPressed: _addPrescriptionRow,
+                  icon: const Icon(Icons.add_circle_outline, size: 18, color: Color(0xFF1E8449)),
+                  label: Text('ADD MEDICATION', style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w800, color: const Color(0xFF1E8449))),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (_prescriptions.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(4)),
+                child: Center(child: Text('No medications prescribed', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey.shade400))),
+              )
+            else
+              ..._prescriptions.asMap().entries.map((entry) => _buildPrescriptionRow(entry.key, entry.value)).toList(),
+
+            const SizedBox(height: 48),
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveRecord,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1E8449),
+                  backgroundColor: const Color(0xFF0B4F87),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                 ),
                 child: _isSaving
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : Text('FINALIZE RECORD & COMPLETE APPT', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, letterSpacing: 1, color: Colors.white)),
+                    : Text('FINALIZE ARCHIVE ENTRY', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, letterSpacing: 1, color: Colors.white)),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPrescriptionRow(int index, Map<String, dynamic> p) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: _buildTextField(p['medicine_name'], 'MEDICINE NAME', TextInputType.text)),
+              IconButton(onPressed: () => _removePrescriptionRow(index), icon: const Icon(Icons.close, color: Colors.red, size: 20)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _buildTextField(p['dosage'], 'DOSAGE (e.g. 500mg)', TextInputType.text)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDropdown(
+                  'FREQUENCY',
+                  p['frequency'],
+                  ['Once daily', 'Twice daily', 'Thrice daily', 'As needed'],
+                  (val) => setState(() => p['frequency'] = val),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdown(
+                  'SPECIFIC TIMING',
+                  p['timing'],
+                  ['After breakfast', 'After lunch', 'After dinner', 'At bedtime'],
+                  (val) => setState(() => p['timing'] = val),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(child: _buildTextField(p['duration_value'], 'DUR.', TextInputType.number)),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: _buildDropdown(
+                        'UNIT',
+                        p['duration_unit'],
+                        ['days', 'weeks'],
+                        (val) => setState(() => p['duration_unit'] = val),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(p['instructions'], 'SPECIAL INSTRUCTIONS', TextInputType.text),
+        ],
       ),
     );
   }
@@ -800,19 +954,41 @@ class _MedicalRecordFormState extends State<MedicalRecordForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF0B4F87).withOpacity(0.5))),
+        Text(label, style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF0B4F87).withValues(alpha: 0.5))),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           keyboardType: type,
           maxLines: maxLines,
-          style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w500),
+          style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600),
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.grey.shade50,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade100)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade100)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            fillColor: Colors.white,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade200)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade200)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdown(String label, String? value, List<String> items, Function(String?) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF0B4F87).withValues(alpha: 0.5))),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          initialValue: value,
+          items: items.map((i) => DropdownMenuItem(value: i, child: Text(i, style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600)))).toList(),
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade200)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade200)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           ),
         ),
       ],

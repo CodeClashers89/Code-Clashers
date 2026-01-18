@@ -142,7 +142,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 4,
-                  color: const Color(0xFF0B4F87).withOpacity(0.1),
+                  color: const Color(0xFF0B4F87).withValues(alpha: 0.1),
                 ),
               ),
               const SizedBox(height: 8),
